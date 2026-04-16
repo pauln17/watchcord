@@ -1,0 +1,43 @@
+{
+  "name": "watchcord",
+  "version": "1.0.0",
+  "description": "Watchcord is a selective alerting bot for Discord that lets you watch specific channels for important messages, keywords, or patterns. It helps you stay on top of the things you care about without needing to constantly check every noisy server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pauln17/watchcord.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/pauln17/watchcord/issues"
+  },
+  "homepage": "https://github.com/pauln17/watchcord#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^25.6.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.7.4",
+    "typescript-eslint": "^8.50.0",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.7.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "discord.js": "^14.26.3",
+    "pg": "^8.20.0"
+  }
+}
