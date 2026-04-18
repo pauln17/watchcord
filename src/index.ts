@@ -1,6 +1,6 @@
 import { ExtendedClient } from "./classes/ExtendedClient";
 import { prisma } from "./lib/prisma";
-import { initializeServices } from "./services";
+import { initializeServices } from "./services/initializeServices";
 
 // Create a new client instance
 const services = initializeServices(prisma);
