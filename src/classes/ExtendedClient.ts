@@ -6,9 +6,10 @@ import { commands } from "../commands";
 import type { CommandType } from "../types/command";
 
 export class ExtendedClient extends Client {
+  services: unknown;
   commands: Collection<string, CommandType> = new Collection();
 
-  constructor() {
+  constructor(services: unknown) {
     super({
       intents: [
         GatewayIntentBits.Guilds,
@@ -16,9 +17,12 @@ export class ExtendedClient extends Client {
         GatewayIntentBits.DirectMessages,
       ],
     });
+
+    this.services = services;
+    this.init();
   }
 
-  start() {
+  init() {
     this.registerCommands();
     this.registerEvents();
     this.login(process.env.DISCORD_TOKEN);
