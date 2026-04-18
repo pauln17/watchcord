@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Watch {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  guildId   String
+  channelId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conditions WatchCondition[]
+
+  @@map("watch")
+}
+
+model WatchCondition {
+  id        String   @id @default(uuid())
+  watchId   String
+  type      WatchConditionType
+  value     String
+  createdAt DateTime @default(now())
+
+  watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
+
+  @@map("watch_conditions")
+}
+
+enum WatchConditionType {
+  USER
+  TERM
+  REGEX
+}
