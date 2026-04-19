@@ -8,9 +8,9 @@ export interface IWatchService {
   updateWatch: (
     id: string,
     userId: string,
-    watch: Partial<Watch>,
+    watch: Omit<Watch, "conditions">,
   ) => Promise<Watch | null>;
-  deleteWatch: (id: string, userId: string) => Promise<void>;
+  deleteWatch: (id: string, userId: string) => Promise<Watch | null>;
 }
 
 export class WatchService implements IWatchService {
@@ -21,8 +21,11 @@ export class WatchService implements IWatchService {
   }
 
   getWatchById = async (id: string, userId: string): Promise<Watch | null> => {
-    return await this.prisma.watch.findUnique({
+    return await this.prisma.watch.findFirst({
       where: { id, userId },
+      include: {
+        conditions: true,
+      },
     });
   };
 
@@ -32,6 +35,9 @@ export class WatchService implements IWatchService {
   ): Promise<Watch[] | null> => {
     return await this.prisma.watch.findMany({
       where: { name, userId },
+      include: {
+        conditions: true,
+      },
     });
   };
 
@@ -43,23 +49,42 @@ export class WatchService implements IWatchService {
         guildId: watch.guildId,
         channelId: watch.channelId,
       },
+      include: {
+        conditions: true,
+      },
     });
   };
 
   updateWatch = async (
     id: string,
     userId: string,
-    watch: Partial<Watch>,
+    watch: Omit<Watch, "conditions">,
   ): Promise<Watch | null> => {
+    const existing = await this.getWatchById(id, userId);
+    if (!existing) {
+      return null;
+    }
+
     return await this.prisma.watch.update({
-      where: { id, userId },
+      where: { id: existing.id },
       data: watch,
+      include: {
+        conditions: true,
+      },
     });
   };
 
-  deleteWatch = async (id: string, userId: string): Promise<void> => {
-    await this.prisma.watch.delete({
-      where: { id, userId },
+  deleteWatch = async (id: string, userId: string): Promise<Watch | null> => {
+    const existing = await this.getWatchById(id, userId);
+    if (!existing) {
+      return null;
+    }
+
+    return await this.prisma.watch.delete({
+      where: { id: existing.id },
+      include: {
+        conditions: true,
+      },
     });
   };
 }

@@ -31,7 +31,6 @@ model WatchCondition {
   watchId   String
   type      WatchConditionType
   value     String
-  createdAt DateTime @default(now())
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 
