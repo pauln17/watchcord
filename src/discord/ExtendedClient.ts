@@ -37,24 +37,23 @@ export class ExtendedClient extends Client {
 
   registerEvents() {
     this.on("interactionCreate", async (interaction) => {
-      if (!interaction.isChatInputCommand()) {
-        return;
-      }
+      if (interaction.isChatInputCommand()) {
+        const { commandName } = interaction;
+        const command = this.commands.get(commandName);
 
-      const { commandName } = interaction;
-      const command = this.commands.get(commandName);
-
-      if (command) {
-        try {
-          await command.execute(interaction);
-        } catch (error) {
-          console.error(error);
-          await interaction.reply({
-            content: "Error Occurred During Command Execution",
-            ephemeral: true,
-          });
+        if (command) {
+          try {
+            await command.execute(interaction);
+          } catch (error) {
+            console.error(error);
+            await interaction.reply({
+              content: "Error Occurred During Command Execution",
+              ephemeral: true,
+            });
+          }
         }
       }
+      return;
     });
   }
 }
