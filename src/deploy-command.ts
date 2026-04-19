@@ -7,9 +7,7 @@ import { commands } from "./commands";
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
 (async () => {
-  const commandsData = Object.values(commands).map((command) =>
-    command.data.toJSON(),
-  );
+  const commandsData = Object.values(commands).map((command) => command.data);
 
   try {
     console.log("Start Refreshing Application (/) Commands.");

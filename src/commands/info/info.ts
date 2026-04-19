@@ -2,7 +2,8 @@ import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 
 export const data = new SlashCommandBuilder()
   .setName("info")
-  .setDescription("A detailed description of the bot");
+  .setDescription("A detailed description of the bot")
+  .toJSON();
 
 export async function execute(interaction: CommandInteraction) {
   return interaction.reply(

@@ -8,7 +8,8 @@ import { viewWatch } from "./view";
 
 export const data = new SlashCommandBuilder()
   .setName("watch")
-  .setDescription("Manage your watches");
+  .setDescription("Manage your watches")
+  .toJSON();
 
 // List Subcommand
 

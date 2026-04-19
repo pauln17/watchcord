@@ -1,14 +1,9 @@
 import type {
   ChatInputCommandInteraction,
-  SlashCommandBuilder,
-  SlashCommandOptionsOnlyBuilder,
-  SlashCommandSubcommandsOnlyBuilder,
+  RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
 
 export type CommandType = {
-  data:
-    | SlashCommandBuilder
-    | SlashCommandOptionsOnlyBuilder
-    | SlashCommandSubcommandsOnlyBuilder;
+  data: RESTPostAPIApplicationCommandsJSONBody;
   execute: (interaction: ChatInputCommandInteraction) => Promise<unknown>;
 };
