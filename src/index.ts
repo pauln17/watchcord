@@ -1,4 +1,4 @@
-import { ExtendedClient } from "./classes/ExtendedClient";
+import { ExtendedClient } from "./discord/ExtendedClient";
 import { prisma } from "./lib/prisma";
 import { initializeServices } from "./services/initializeServices";
 
