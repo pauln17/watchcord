@@ -76,11 +76,22 @@ export const data = new SlashCommandBuilder()
           .setRequired(false),
       ),
   )
+
+  // Edit Subcommand
+
+  // Remove Subcommand
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("remove")
+      .setDescription("Remove a watch by ID")
+      .addStringOption((option) =>
+        option
+          .setName("id")
+          .setDescription("The ID of the watch to remove")
+          .setRequired(true),
+      ),
+  )
   .toJSON();
-
-// Edit Subcommand
-
-// Remove Subcommand
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
@@ -96,7 +107,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     case "edit":
       return await editWatch(interaction);
     case "remove":
-      return await removeWatch(interaction);
+      return await removeWatch(interaction, services);
     default:
       return await interaction.reply({
         content: "Invalid Subcommand",
