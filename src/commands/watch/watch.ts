@@ -1,5 +1,10 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  InteractionContextType,
+  SlashCommandBuilder,
+} from "discord.js";
 
+import type { ExtendedClient } from "../../discord/ExtendedClient";
 import { addWatch } from "./add";
 import { editWatch } from "./edit";
 import { listWatch } from "./list";
@@ -9,10 +14,21 @@ import { viewWatch } from "./view";
 export const data = new SlashCommandBuilder()
   .setName("watch")
   .setDescription("Manage your watches")
+  .setContexts(InteractionContextType.Guild)
+
+  // List Subcommand
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("list")
+      .setDescription("List your watches")
+      .addChannelOption((option) =>
+        option
+          .setName("channel")
+          .setDescription("List watches by channel")
+          .setRequired(false),
+      ),
+  )
   .toJSON();
-
-// List Subcommand
-
 // View Subcommand
 
 // Add Subcommand
@@ -23,10 +39,11 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
+  const services = (interaction.client as ExtendedClient).services;
   // TODO: Implement Interaction Responses
   switch (subcommand) {
     case "list":
-      return await listWatch(interaction);
+      return await listWatch(interaction, services);
     case "view":
       return await viewWatch(interaction);
     case "add":
