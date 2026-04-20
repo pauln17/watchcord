@@ -3,12 +3,13 @@ import "dotenv/config";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 
 import { commands } from "../commands";
+import { logger } from "../lib/logger";
 import type { IServices } from "../services/initializeServices";
 import type { CommandType } from "../types/command";
 
 export class ExtendedClient extends Client {
-  services: IServices;
   commands: Collection<string, CommandType> = new Collection();
+  services: IServices;
 
   constructor(services: IServices) {
     super({
@@ -45,7 +46,11 @@ export class ExtendedClient extends Client {
           try {
             await command.execute(interaction);
           } catch (error) {
-            console.error(error);
+            logger.error({
+              message: "Error Occurred During Command Execution",
+              error,
+            });
+
             await interaction.reply({
               content: "Error Occurred During Command Execution",
               ephemeral: true,

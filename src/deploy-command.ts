@@ -3,6 +3,7 @@ import "dotenv/config";
 import { REST, Routes } from "discord.js";
 
 import { commands } from "./commands";
+import { logger } from "./lib/logger";
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
@@ -10,7 +11,9 @@ const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
   const commandsData = Object.values(commands).map((command) => command.data);
 
   try {
-    console.log("Start Refreshing Application (/) Commands.");
+    logger.info({
+      message: "Started Refreshing Application (/) Commands.",
+    });
 
     // Production -- Deploy To Global Commands (May Take Up To 1 Hour To Show In Every Client)
     // await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!), {
@@ -28,8 +31,13 @@ const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
       },
     );
 
-    console.log("Successfully Refreshed Application (/) Commands.");
+    logger.info({
+      message: "Successfully Refreshed Application (/) Commands.",
+    });
   } catch (error) {
-    console.error(error);
+    logger.error({
+      message: "Failed to refresh application commands.",
+      error,
+    });
   }
 })();

@@ -24,7 +24,7 @@ export const data = new SlashCommandBuilder()
       .addChannelOption((option) =>
         option
           .setName("channel")
-          .setDescription("List watches by channel")
+          .setDescription("List your watches by channel")
           .setRequired(false),
       ),
   )

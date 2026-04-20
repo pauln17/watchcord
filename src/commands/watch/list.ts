@@ -48,6 +48,7 @@ export const listWatch = async (
     );
 
     // Build Embed Description
+
     notificationEmbed.setDescription(`TBD ${watches}`);
   }
 
