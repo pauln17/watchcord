@@ -3,9 +3,9 @@ import "dotenv/config";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 
 import { commands } from "../commands";
-import { logger } from "../lib/logger";
 import type { IServices } from "../services/initializeServices";
 import type { CommandType } from "../types/command";
+import { logger } from "../util/logger";
 
 export class ExtendedClient extends Client {
   commands: Collection<string, CommandType> = new Collection();

@@ -3,7 +3,7 @@ import "dotenv/config";
 import { REST, Routes } from "discord.js";
 
 import { commands } from "./commands";
-import { logger } from "./lib/logger";
+import { logger } from "./util/logger";
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 

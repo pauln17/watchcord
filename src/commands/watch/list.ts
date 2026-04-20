@@ -11,25 +11,18 @@ export const listWatch = async (
   interaction: ChatInputCommandInteraction,
   services: IServices,
 ) => {
-  if (!interaction.guild || !interaction.guildId) {
-    return await interaction.reply({
-      content: "This command can only be used in a guild",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
   const channel = interaction.options.getChannel("channel", false, [
     ChannelType.GuildText,
   ]);
 
   const watches = channel
     ? await services.watchService.getUserWatchesByGuildAndChannel(
-        interaction.guildId,
+        interaction.guildId!,
         channel.id,
         interaction.user.id,
       )
     : await services.watchService.getUserWatchesByGuild(
-        interaction.guildId,
+        interaction.guildId!,
         interaction.user.id,
       );
 
@@ -42,7 +35,7 @@ export const listWatch = async (
 
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
-    .setTitle(`Watch List of Server: ${interaction.guild.name}`)
+    .setTitle(`Watch List of Server: ${interaction.guild!.name}`)
     .setFooter({
       text: "Watchcord",
       iconURL: interaction.client.user?.displayAvatarURL() ?? "",

@@ -1,6 +1,7 @@
 import {
   ChatInputCommandInteraction,
   InteractionContextType,
+  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -95,17 +96,24 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
+  if (!interaction.guild || !interaction.guildId) {
+    return await interaction.reply({
+      content: "Guild not found",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   const services = (interaction.client as ExtendedClient).services;
-  // TODO: Implement Interaction Responses
+
   switch (subcommand) {
     case "list":
       return await listWatch(interaction, services);
     case "view":
-      return await viewWatch(interaction);
+      return await viewWatch(interaction, services);
     case "add":
       return await addWatch(interaction, services);
     case "edit":
-      return await editWatch(interaction);
+      return await editWatch(interaction, services);
     case "remove":
       return await removeWatch(interaction, services);
     default:

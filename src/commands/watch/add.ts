@@ -11,13 +11,6 @@ export const addWatch = async (
   interaction: ChatInputCommandInteraction,
   services: IServices,
 ) => {
-  if (!interaction.guildId) {
-    return await interaction.reply({
-      content: "This command can only be used in a guild",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
   const name = interaction.options.getString("name");
   const channel = interaction.options.getChannel("channel");
   const type = interaction.options.getString("type");
@@ -35,7 +28,7 @@ export const addWatch = async (
   const watch = await services.watchService.createWatch({
     name,
     userId: interaction.user.id,
-    guildId: interaction.guildId,
+    guildId: interaction.guildId!,
     channelId: channel.id,
   });
 

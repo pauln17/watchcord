@@ -1,5 +1,10 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
-export const viewWatch = async (interaction: ChatInputCommandInteraction) => {
+import type { IServices } from "../../services/initializeServices";
+
+export const viewWatch = async (
+  interaction: ChatInputCommandInteraction,
+  services: IServices,
+) => {
   return await interaction.reply(`view`);
 };
