@@ -3,7 +3,15 @@ import type { Watch } from "../types/watch";
 
 export interface IWatchService {
   getWatchById: (id: string, userId: string) => Promise<Watch | null>;
-  getWatchesByName: (name: string, userId: string) => Promise<Watch[] | null>;
+  getUserWatchesByGuild: (
+    name: string,
+    userId: string,
+  ) => Promise<Watch[] | null>;
+  getUserWatchesByGuildAndChannel: (
+    guildId: string,
+    channelId: string,
+    userId: string,
+  ) => Promise<Watch[] | null>;
   createWatch: (watch: Watch) => Promise<Watch>;
   updateWatch: (
     id: string,
@@ -23,21 +31,28 @@ export class WatchService implements IWatchService {
   getWatchById = async (id: string, userId: string): Promise<Watch | null> => {
     return await this.prisma.watch.findFirst({
       where: { id, userId },
-      include: {
-        conditions: true,
-      },
+      include: { conditions: true },
     });
   };
 
-  getWatchesByName = async (
-    name: string,
+  getUserWatchesByGuild = async (
+    guildId: string,
     userId: string,
   ): Promise<Watch[] | null> => {
     return await this.prisma.watch.findMany({
-      where: { name, userId },
-      include: {
-        conditions: true,
-      },
+      where: { guildId, userId },
+      include: { conditions: true },
+    });
+  };
+
+  getUserWatchesByGuildAndChannel = async (
+    guildId: string,
+    channelId: string,
+    userId: string,
+  ): Promise<Watch[] | null> => {
+    return await this.prisma.watch.findMany({
+      where: { guildId, channelId, userId },
+      include: { conditions: true },
     });
   };
 
