@@ -28,10 +28,55 @@ export const data = new SlashCommandBuilder()
           .setRequired(false),
       ),
   )
-  .toJSON();
-// View Subcommand
+  // View Subcommand
 
-// Add Subcommand
+  // Add Subcommand
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("add")
+      .setDescription("Add a new watch")
+      .addStringOption((option) =>
+        option
+          .setName("name")
+          .setDescription("The name of the watch")
+          .setRequired(true),
+      )
+      .addChannelOption((option) =>
+        option
+          .setName("channel")
+          .setDescription("The channel to watch")
+          .setRequired(true),
+      )
+      .addStringOption((option) =>
+        option
+          .setName("type")
+          .setDescription("The type of the watch")
+          .setRequired(true)
+          .addChoices(
+            { name: "Term", value: "TERM" },
+            { name: "Regex", value: "REGEX" },
+          ),
+      )
+      .addStringOption((option) =>
+        option
+          .setName("condition")
+          .setDescription("The condition to watch")
+          .setRequired(true),
+      )
+      .addUserOption((option) =>
+        option
+          .setName("user")
+          .setDescription("The user to watch")
+          .setRequired(false),
+      )
+      .addRoleOption((option) =>
+        option
+          .setName("role")
+          .setDescription("The role to watch")
+          .setRequired(false),
+      ),
+  )
+  .toJSON();
 
 // Edit Subcommand
 
@@ -47,7 +92,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     case "view":
       return await viewWatch(interaction);
     case "add":
-      return await addWatch(interaction);
+      return await addWatch(interaction, services);
     case "edit":
       return await editWatch(interaction);
     case "remove":

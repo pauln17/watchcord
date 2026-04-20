@@ -7,6 +7,4 @@ export interface Watch {
   guildId: string;
   channelId: string;
   conditions: WatchCondition[];
-  createdAt: Date;
-  updatedAt: Date;
 }

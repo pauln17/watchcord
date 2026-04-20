@@ -13,13 +13,11 @@ datasource db {
 }
 
 model Watch {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   userId    String
   name      String
   guildId   String
   channelId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   conditions WatchCondition[]
 
@@ -27,10 +25,12 @@ model Watch {
 }
 
 model WatchCondition {
-  id        String   @id @default(uuid())
-  watchId   String
-  type      WatchConditionType
-  value     String
+  id           String             @id @default(uuid())
+  watchId      String
+  type         WatchConditionType
+  targetUserId String?
+  targetRoleId String?
+  value        String
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 
@@ -38,7 +38,6 @@ model WatchCondition {
 }
 
 enum WatchConditionType {
-  USER
   TERM
   REGEX
 }

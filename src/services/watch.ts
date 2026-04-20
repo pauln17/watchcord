@@ -56,7 +56,9 @@ export class WatchService implements IWatchService {
     });
   };
 
-  createWatch = async (watch: Watch): Promise<Watch> => {
+  createWatch = async (
+    watch: Omit<Watch, "id" | "conditions">,
+  ): Promise<Watch> => {
     return await this.prisma.watch.create({
       data: {
         name: watch.name,

@@ -1,5 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
-import type { WatchCondition } from "../types/condition";
+import type { WatchCondition, WatchConditionType } from "../types/condition";
 
 export interface IWatchConditionService {
   getWatchConditionById: (
@@ -37,10 +37,16 @@ export class WatchConditionService implements IWatchConditionService {
   };
 
   createWatchCondition = async (
-    watchCondition: WatchCondition,
+    watchCondition: Omit<WatchCondition, "id">,
   ): Promise<WatchCondition> => {
     return await this.prisma.watchCondition.create({
-      data: watchCondition,
+      data: {
+        watchId: watchCondition.watchId,
+        type: watchCondition.type as WatchConditionType,
+        targetUserId: watchCondition.targetUserId ?? null,
+        targetRoleId: watchCondition.targetRoleId ?? null,
+        value: watchCondition.value,
+      },
     });
   };
 
