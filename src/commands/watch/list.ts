@@ -22,6 +22,24 @@ export const listWatch = async (
     ChannelType.GuildText,
   ]);
 
+  const watches = channel
+    ? await services.watchService.getUserWatchesByGuildAndChannel(
+        interaction.guildId,
+        channel.id,
+        interaction.user.id,
+      )
+    : await services.watchService.getUserWatchesByGuild(
+        interaction.guildId,
+        interaction.user.id,
+      );
+
+  if (!watches || watches.length === 0) {
+    return await interaction.reply({
+      content: "You have no watches in this server",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
     .setTitle(`Watch List of Server: ${interaction.guild.name}`)
@@ -31,26 +49,21 @@ export const listWatch = async (
     })
     .setTimestamp(new Date());
 
-  if (channel) {
-    const watches = await services.watchService.getUserWatchesByGuildAndChannel(
-      interaction.guildId,
-      channel.id,
-      interaction.user.id,
-    );
+  let description = "";
+  watches.forEach((watch) => {
+    const channelName =
+      interaction.guild?.channels.cache.get(watch.channelId)?.name ??
+      "Unknown Channel";
 
-    // Build Embed Description
+    description += [
+      `**${watch.name}**`,
+      `Channel: ${channelName} <#${watch.channelId}>`,
+      `View: \`/watch view id: ${watch.id}\``,
+      "\n",
+    ].join("\n");
+  });
 
-    notificationEmbed.setDescription(`TBD ${watches}`);
-  } else {
-    const watches = await services.watchService.getUserWatchesByGuild(
-      interaction.guildId,
-      interaction.user.id,
-    );
-
-    // Build Embed Description
-
-    notificationEmbed.setDescription(`TBD ${watches}`);
-  }
+  notificationEmbed.setDescription(description);
 
   return await interaction.reply({
     embeds: [notificationEmbed],
