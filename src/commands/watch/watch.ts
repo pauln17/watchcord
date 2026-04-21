@@ -16,7 +16,6 @@ export const data = new SlashCommandBuilder()
   .setName("watch")
   .setDescription("Manage your watches")
   .setContexts(InteractionContextType.Guild)
-
   // List Subcommand
   .addSubcommand((subcommand) =>
     subcommand
@@ -47,39 +46,32 @@ export const data = new SlashCommandBuilder()
           .setName("channel")
           .setDescription("The channel to watch")
           .setRequired(true),
-      )
+      ),
+  )
+  // Edit Subcommand
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("edit")
+      .setDescription("Edit a watch by ID")
       .addStringOption((option) =>
         option
-          .setName("type")
-          .setDescription("The type of the watch")
-          .setRequired(true)
-          .addChoices(
-            { name: "Term", value: "TERM" },
-            { name: "Regex", value: "REGEX" },
-          ),
-      )
-      .addStringOption((option) =>
-        option
-          .setName("condition")
-          .setDescription("The condition to watch")
+          .setName("id")
+          .setDescription("The ID of the watch to edit")
           .setRequired(true),
       )
-      .addUserOption((option) =>
+      .addStringOption((option) =>
         option
-          .setName("user")
-          .setDescription("The user to watch")
+          .setName("name")
+          .setDescription("The name of the watch")
           .setRequired(false),
       )
-      .addRoleOption((option) =>
+      .addChannelOption((option) =>
         option
-          .setName("role")
-          .setDescription("The role to watch")
+          .setName("channel")
+          .setDescription("The channel to watch")
           .setRequired(false),
       ),
   )
-
-  // Edit Subcommand
-
   // Remove Subcommand
   .addSubcommand((subcommand) =>
     subcommand

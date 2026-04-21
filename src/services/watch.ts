@@ -12,11 +12,11 @@ export interface IWatchService {
     channelId: string,
     userId: string,
   ) => Promise<Watch[] | null>;
-  createWatch: (watch: Watch) => Promise<Watch>;
+  createWatch: (watch: Omit<Watch, "id" | "conditions">) => Promise<Watch>;
   updateWatch: (
     id: string,
     userId: string,
-    watch: Omit<Watch, "conditions">,
+    watch: Partial<Watch>,
   ) => Promise<Watch | null>;
   deleteWatch: (id: string, userId: string) => Promise<Watch | null>;
 }
@@ -75,7 +75,7 @@ export class WatchService implements IWatchService {
   updateWatch = async (
     id: string,
     userId: string,
-    watch: Omit<Watch, "conditions">,
+    watch: Partial<Watch>,
   ): Promise<Watch | null> => {
     const existing = await this.getWatchById(id, userId);
     if (!existing) {
@@ -84,7 +84,10 @@ export class WatchService implements IWatchService {
 
     return await this.prisma.watch.update({
       where: { id: existing.id },
-      data: watch,
+      data: {
+        name: watch.name ?? existing.name,
+        channelId: watch.channelId ?? existing.channelId,
+      },
       include: {
         conditions: true,
       },

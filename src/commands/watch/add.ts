@@ -5,7 +5,6 @@ import {
 } from "discord.js";
 
 import type { IServices } from "../../services/initializeServices";
-import type { WatchConditionType } from "../../types/condition";
 
 export const addWatch = async (
   interaction: ChatInputCommandInteraction,
@@ -13,12 +12,8 @@ export const addWatch = async (
 ) => {
   const name = interaction.options.getString("name");
   const channel = interaction.options.getChannel("channel");
-  const type = interaction.options.getString("type");
-  const condition = interaction.options.getString("condition");
-  const user = interaction.options.getUser("user");
-  const role = interaction.options.getRole("role");
 
-  if (!name || !channel || !type || !condition) {
+  if (!name || !channel) {
     return await interaction.reply({
       content: "Missing required arguments",
       flags: MessageFlags.Ephemeral,
@@ -30,14 +25,6 @@ export const addWatch = async (
     userId: interaction.user.id,
     guildId: interaction.guildId!,
     channelId: channel.id,
-  });
-
-  await services.watchConditionService.createWatchCondition({
-    watchId: watch.id,
-    type: type as WatchConditionType,
-    targetUserId: user?.id ?? null,
-    targetRoleId: role?.id ?? null,
-    value: condition,
   });
 
   const notificationEmbed = new EmbedBuilder()
