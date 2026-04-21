@@ -27,6 +27,7 @@ model Watch {
 model WatchCondition {
   id           String             @id @default(uuid())
   watchId      String
+  name         String
   type         WatchConditionType
   targetUserId String?
   targetRoleId String?

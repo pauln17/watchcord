@@ -4,6 +4,7 @@ export type WatchConditionType = (typeof WatchConditionTypes)[number];
 export interface WatchCondition {
   id: string;
   watchId: string;
+  name: string;
   type: WatchConditionType;
   targetUserId?: string | null;
   targetRoleId?: string | null;

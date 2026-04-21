@@ -29,7 +29,17 @@ export const data = new SlashCommandBuilder()
       ),
   )
   // View Subcommand
-
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("view")
+      .setDescription("View watch details by ID")
+      .addStringOption((option) =>
+        option
+          .setName("id")
+          .setDescription("The ID of the watch to view")
+          .setRequired(true),
+      ),
+  )
   // Add Subcommand
   .addSubcommand((subcommand) =>
     subcommand
