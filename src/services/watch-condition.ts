@@ -42,6 +42,7 @@ export class WatchConditionService implements IWatchConditionService {
     return await this.prisma.watchCondition.create({
       data: {
         watchId: watchCondition.watchId,
+        name: watchCondition.name,
         type: watchCondition.type as WatchConditionType,
         targetUserId: watchCondition.targetUserId ?? null,
         targetRoleId: watchCondition.targetRoleId ?? null,
