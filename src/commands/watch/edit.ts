@@ -13,10 +13,19 @@ export const editWatch = async (
   const watchId = interaction.options.getString("id", true);
   const userId = interaction.user.id;
   const name = interaction.options.getString("name");
+  const scope = interaction.options.getString("scope");
   const channel = interaction.options.getChannel("channel");
+
+  if (scope != null && scope !== "GUILD" && scope !== "CHANNEL") {
+    return await interaction.reply({
+      content: "Invalid scope",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
 
   const updated = await services.watchService.updateWatch(watchId, userId, {
     ...(name != null ? { name } : {}),
+    ...(scope != null ? { scope } : {}),
     ...(channel != null ? { channelId: channel.id } : {}),
   });
 

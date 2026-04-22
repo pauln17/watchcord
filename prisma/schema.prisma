@@ -16,8 +16,9 @@ model Watch {
   id        String @id @default(uuid())
   userId    String
   name      String
+  scope     ScopeType
   guildId   String
-  channelId String
+  channelId String?
 
   conditions WatchCondition[]
 
@@ -41,4 +42,9 @@ model WatchCondition {
 enum WatchConditionType {
   TERM
   REGEX
+}
+
+enum ScopeType {
+  GUILD
+  CHANNEL
 }

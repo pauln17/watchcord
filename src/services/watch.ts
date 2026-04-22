@@ -3,21 +3,19 @@ import type { RedisClientType } from "../lib/redis";
 import type { Watch } from "../types/watch";
 
 export interface IWatchService {
+  getAllWatches: () => Promise<Watch[]>;
   getWatchById: (id: string, userId: string) => Promise<Watch | null>;
-  getUserWatchesByGuild: (
-    name: string,
-    userId: string,
-  ) => Promise<Watch[] | null>;
+  getUserWatchesByGuild: (guildId: string, userId: string) => Promise<Watch[]>;
   getUserWatchesByGuildAndChannel: (
     guildId: string,
     channelId: string,
     userId: string,
-  ) => Promise<Watch[] | null>;
+  ) => Promise<Watch[]>;
   createWatch: (watch: Omit<Watch, "id" | "conditions">) => Promise<Watch>;
   updateWatch: (
     id: string,
     userId: string,
-    watch: Partial<Watch>,
+    watch: Partial<Omit<Watch, "id" | "conditions">>,
   ) => Promise<Watch | null>;
   deleteWatch: (id: string, userId: string) => Promise<Watch | null>;
 }
@@ -31,6 +29,14 @@ export class WatchService implements IWatchService {
     this.redis = redis;
   }
 
+  getAllWatches = async (): Promise<Watch[]> => {
+    return await this.prisma.watch.findMany({
+      include: {
+        conditions: true,
+      },
+    });
+  };
+
   getWatchById = async (id: string, userId: string): Promise<Watch | null> => {
     return await this.prisma.watch.findFirst({
       where: { id, userId },
@@ -41,10 +47,12 @@ export class WatchService implements IWatchService {
   getUserWatchesByGuild = async (
     guildId: string,
     userId: string,
-  ): Promise<Watch[] | null> => {
+  ): Promise<Watch[]> => {
     return await this.prisma.watch.findMany({
-      where: { guildId, userId },
-      include: { conditions: true },
+      where: { userId, guildId },
+      include: {
+        conditions: true,
+      },
     });
   };
 
@@ -52,10 +60,12 @@ export class WatchService implements IWatchService {
     guildId: string,
     channelId: string,
     userId: string,
-  ): Promise<Watch[] | null> => {
+  ): Promise<Watch[]> => {
     return await this.prisma.watch.findMany({
-      where: { guildId, channelId, userId },
-      include: { conditions: true },
+      where: { userId, guildId, channelId },
+      include: {
+        conditions: true,
+      },
     });
   };
 
@@ -63,12 +73,7 @@ export class WatchService implements IWatchService {
     watch: Omit<Watch, "id" | "conditions">,
   ): Promise<Watch> => {
     return await this.prisma.watch.create({
-      data: {
-        name: watch.name,
-        userId: watch.userId,
-        guildId: watch.guildId,
-        channelId: watch.channelId,
-      },
+      data: watch,
       include: {
         conditions: true,
       },
@@ -78,7 +83,7 @@ export class WatchService implements IWatchService {
   updateWatch = async (
     id: string,
     userId: string,
-    watch: Partial<Watch>,
+    watch: Partial<Omit<Watch, "id" | "conditions">>,
   ): Promise<Watch | null> => {
     const existing = await this.getWatchById(id, userId);
     if (!existing) {
@@ -87,10 +92,7 @@ export class WatchService implements IWatchService {
 
     return await this.prisma.watch.update({
       where: { id: existing.id },
-      data: {
-        name: watch.name ?? existing.name,
-        channelId: watch.channelId ?? existing.channelId,
-      },
+      data: watch,
       include: {
         conditions: true,
       },

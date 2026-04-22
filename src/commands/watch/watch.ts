@@ -51,11 +51,21 @@ export const data = new SlashCommandBuilder()
           .setDescription("The name of the watch")
           .setRequired(true),
       )
+      .addStringOption((option) =>
+        option
+          .setName("scope")
+          .setDescription("The scope of the watch")
+          .addChoices(
+            { name: "Guild", value: "GUILD" },
+            { name: "Channel", value: "CHANNEL" },
+          )
+          .setRequired(true),
+      )
       .addChannelOption((option) =>
         option
           .setName("channel")
           .setDescription("The channel to watch")
-          .setRequired(true),
+          .setRequired(false),
       ),
   )
   // Edit Subcommand
@@ -73,6 +83,16 @@ export const data = new SlashCommandBuilder()
         option
           .setName("name")
           .setDescription("The name of the watch")
+          .setRequired(false),
+      )
+      .addStringOption((option) =>
+        option
+          .setName("scope")
+          .setDescription("The scope of the watch")
+          .addChoices(
+            { name: "Guild", value: "GUILD" },
+            { name: "Channel", value: "CHANNEL" },
+          )
           .setRequired(false),
       )
       .addChannelOption((option) =>
