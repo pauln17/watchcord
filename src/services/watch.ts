@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { RedisClientType } from "../lib/redis";
 import type { Watch } from "../types/watch";
 
 export interface IWatchService {
@@ -23,9 +24,11 @@ export interface IWatchService {
 
 export class WatchService implements IWatchService {
   private readonly prisma: PrismaClient;
+  private readonly redis: RedisClientType;
 
-  constructor(prisma: PrismaClient) {
+  constructor(prisma: PrismaClient, redis: RedisClientType) {
     this.prisma = prisma;
+    this.redis = redis;
   }
 
   getWatchById = async (id: string, userId: string): Promise<Watch | null> => {

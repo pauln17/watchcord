@@ -1,7 +1,9 @@
 import { ExtendedClient } from "./discord/ExtendedClient";
 import { prisma } from "./lib/prisma";
+import { redis } from "./lib/redis";
 import { initializeServices } from "./services/initializeServices";
 
-// Create a new client instance
-const services = initializeServices(prisma);
+await redis.connect();
+
+const services = initializeServices(prisma, redis);
 export const client = new ExtendedClient(services);

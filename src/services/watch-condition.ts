@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { RedisClientType } from "../lib/redis";
 import type { WatchCondition, WatchConditionType } from "../types/condition";
 
 export interface IWatchConditionService {
@@ -22,9 +23,11 @@ export interface IWatchConditionService {
 
 export class WatchConditionService implements IWatchConditionService {
   private readonly prisma: PrismaClient;
+  private readonly redis: RedisClientType;
 
-  constructor(prisma: PrismaClient) {
+  constructor(prisma: PrismaClient, redis: RedisClientType) {
     this.prisma = prisma;
+    this.redis = redis;
   }
 
   getWatchConditionById = async (
