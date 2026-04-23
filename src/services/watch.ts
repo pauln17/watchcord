@@ -86,10 +86,16 @@ export class WatchService implements IWatchService {
       if (watch.userId === userId) return watch;
     }
 
-    return await this.prisma.watch.findFirst({
+    const watch = await this.prisma.watch.findFirst({
       where: { id, userId },
       include: { conditions: true },
     });
+
+    if (watch) {
+      await this.updateRedis("CREATE", watch);
+    }
+
+    return watch;
   };
 
   getUserWatchesByGuild = async (
@@ -107,12 +113,20 @@ export class WatchService implements IWatchService {
       if (watches.length > 0) return watches;
     }
 
-    return await this.prisma.watch.findMany({
+    const watches = await this.prisma.watch.findMany({
       where: { userId, guildId },
       include: {
         conditions: true,
       },
     });
+
+    if (watches.length > 0) {
+      for (const watch of watches) {
+        await this.updateRedis("CREATE", watch);
+      }
+    }
+
+    return watches;
   };
 
   getUserWatchesByGuildAndChannel = async (
@@ -133,12 +147,20 @@ export class WatchService implements IWatchService {
       if (watches.length > 0) return watches;
     }
 
-    return await this.prisma.watch.findMany({
+    const watches = await this.prisma.watch.findMany({
       where: { userId, guildId, channelId },
       include: {
         conditions: true,
       },
     });
+
+    if (watches.length > 0) {
+      for (const watch of watches) {
+        await this.updateRedis("CREATE", watch);
+      }
+    }
+
+    return watches;
   };
 
   createWatch = async (
