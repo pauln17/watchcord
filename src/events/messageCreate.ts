@@ -1,19 +1,18 @@
-import { EmbedBuilder, type Message } from "discord.js";
+import { EmbedBuilder, GuildMember, type Message } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
-import type { Watch,WatchCondition } from "../types";
+import type { Watch, WatchCondition } from "../types";
 import type { ILogger } from "../util/logger";
 
-const matchesCondition = (condition: WatchCondition, message: Message) => {
+const matchesCondition = async (
+  condition: WatchCondition,
+  message: Message,
+) => {
   const { type, value, targetUserId, targetRoleId } = condition;
 
-  if (targetUserId && targetUserId !== message.author.id) {
+  if (targetUserId && targetUserId !== message.author.id) return false;
+  if (targetRoleId && !message.member?.roles.cache.has(targetRoleId))
     return false;
-  }
-
-  if (targetRoleId && !message.member?.roles.cache.has(targetRoleId)) {
-    return false;
-  }
 
   switch (type) {
     case "TERM":
@@ -113,7 +112,7 @@ export async function handleMessageCreate(
 
   const watchIds = Array.from(
     new Set([
-      ...(await redis.sMembers(`wc:guilds:${guildId}:all`)),
+      ...(await redis.sMembers(`wc:guilds:${guildId}`)),
       ...(await redis.sMembers(`wc:guilds:${guildId}:channels:${channelId}`)),
     ]),
   );
@@ -136,13 +135,20 @@ export async function handleMessageCreate(
 
       if (matchedConditions.length > 0) {
         console.log(matchedConditions);
-        await sendNotification(
-          client,
-          watch,
-          matchedConditions,
-          message,
-          logger,
-        );
+        try {
+          await sendNotification(
+            client,
+            watch,
+            matchedConditions,
+            message,
+            logger,
+          );
+        } catch (error) {
+          logger.error({
+            message: "Failed to send watch notification",
+            error: { watchId: watch.id, userId: watch.userId, cause: error },
+          });
+        }
       }
     }),
   );
