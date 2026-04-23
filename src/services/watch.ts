@@ -168,7 +168,15 @@ export class WatchService implements IWatchService {
 
     const updated = await this.prisma.watch.update({
       where: { id: existing.id },
-      data,
+      data: {
+        ...(data.name != null ? { name: data.name } : {}),
+        ...(data.scope != null ? { scope: data.scope } : {}),
+        ...(data.scope === "GUILD" ? { channelId: null } : {}),
+        ...((data.scope === "CHANNEL" || data.scope == null) &&
+        data.channelId != null
+          ? { channelId: data.channelId }
+          : {}),
+      },
       include: {
         conditions: true,
       },
@@ -179,15 +187,21 @@ export class WatchService implements IWatchService {
 
     return updated;
   };
+
   deleteWatch = async (id: string, userId: string): Promise<Watch | null> => {
+    const existing = await this.getWatchById(id, userId);
+    if (!existing) {
+      return null;
+    }
+
     const deleted = await this.prisma.watch.delete({
-      where: { id, userId },
+      where: { id: existing.id },
       include: {
         conditions: true,
       },
     });
 
-    await this.updateRedis("DELETE", deleted);
+    await this.updateRedis("DELETE", existing);
 
     return deleted;
   };

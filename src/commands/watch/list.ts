@@ -44,16 +44,14 @@ export const listWatch = async (
 
   let description = "";
   watches.forEach((watch) => {
-    const channelName = watch.channelId
-      ? interaction.guild?.channels.cache.get(watch.channelId)?.name
-      : "Guild-Wide";
-    const channelDisplay = watch.channelId
-      ? `${channelName} <#${watch.channelId}>`
+    const watchingValue = watch.channelId
+      ? `Channel ${interaction.guild?.channels.cache.get(watch.channelId)?.name} <#${watch.channelId}>`
       : "Guild-Wide";
 
     description += [
       `**${watch.name}**`,
-      `Channel: ${channelDisplay}`,
+      `Scope: ${watch.scope.toLowerCase().charAt(0).toUpperCase() + watch.scope.toLowerCase().slice(1)}`,
+      `Watching: ${watchingValue}`,
       `View: \`/watch view id: ${watch.id}\``,
       "\n",
     ].join("\n");

@@ -16,6 +16,13 @@ export const editWatch = async (
   const scope = interaction.options.getString("scope");
   const channel = interaction.options.getChannel("channel");
 
+  if (!name && !scope && !channel) {
+    return await interaction.reply({
+      content: "At least one option is required",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   if (scope != null && scope !== "GUILD" && scope !== "CHANNEL") {
     return await interaction.reply({
       content: "Invalid scope",
@@ -23,10 +30,27 @@ export const editWatch = async (
     });
   }
 
+  if (scope === "CHANNEL" && !channel) {
+    return await interaction.reply({
+      content: "Channel is required when scope is set to channel",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
+  if (scope === "GUILD" && channel) {
+    return await interaction.reply({
+      content: "Guild scope cannot be used with a channel",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   const updated = await services.watchService.updateWatch(watchId, userId, {
     ...(name != null ? { name } : {}),
     ...(scope != null ? { scope } : {}),
-    ...(channel != null ? { channelId: channel.id } : {}),
+    ...(scope === "GUILD" ? { channelId: null } : {}),
+    ...((scope === "CHANNEL" || scope == null) && channel != null
+      ? { channelId: channel.id }
+      : {}),
   });
 
   if (!updated) {

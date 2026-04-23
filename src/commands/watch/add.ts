@@ -14,6 +14,13 @@ export const addWatch = async (
   const scope = interaction.options.getString("scope", true);
   const channel = interaction.options.getChannel("channel");
 
+  if (scope !== "GUILD" && scope !== "CHANNEL") {
+    return await interaction.reply({
+      content: "Invalid scope",
+      flags: MessageFlags.Ephemeral,
+    });
+  }
+
   if (scope === "CHANNEL" && !channel) {
     return await interaction.reply({
       content: "Channel is required when scope is set to channel",
@@ -21,9 +28,9 @@ export const addWatch = async (
     });
   }
 
-  if (scope !== "GUILD" && scope !== "CHANNEL") {
+  if (scope === "GUILD" && channel) {
     return await interaction.reply({
-      content: "Invalid scope",
+      content: "Guild scope cannot be used with a channel",
       flags: MessageFlags.Ephemeral,
     });
   }
@@ -33,7 +40,10 @@ export const addWatch = async (
     userId: interaction.user.id,
     scope,
     guildId: interaction.guildId!,
-    ...(channel != null ? { channelId: channel.id } : {}),
+    ...(scope === "CHANNEL" && channel != null
+      ? { channelId: channel.id }
+      : {}),
+    ...(scope === "GUILD" && channel == null ? { channelId: null } : {}),
   });
 
   const notificationEmbed = new EmbedBuilder()

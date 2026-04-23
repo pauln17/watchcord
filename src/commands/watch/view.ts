@@ -21,8 +21,11 @@ export const viewWatch = async (
     });
   }
 
-  let conditions = "";
+  const watchingValue = watch.channelId
+    ? `Channel ${interaction.guild?.channels.cache.get(watch.channelId)?.name} <#${watch.channelId}>`
+    : "Guild-Wide";
 
+  let conditions = "";
   watch.conditions.forEach((condition) => {
     conditions += [
       `**${condition.name}**`,
@@ -43,10 +46,17 @@ export const viewWatch = async (
     .addFields(
       { name: "Name", value: `${watch.name}` },
       { name: "ID", value: `\`${watch.id}\`` },
-      { name: "Channel", value: `<#${watch.channelId}>` },
+      {
+        name: "Scope",
+        value: `${watch.scope.toLowerCase().charAt(0).toUpperCase() + watch.scope.toLowerCase().slice(1)}`,
+      },
+      {
+        name: "Watching",
+        value: watch.scope === "CHANNEL" ? `${watchingValue}` : "Guild-Wide",
+      },
       {
         name: "Conditions",
-        value: conditions,
+        value: conditions ? conditions : "Empty",
       },
     )
     .setFooter({
