@@ -6,4 +6,4 @@ import { initializeServices } from "./services/initializeServices";
 await redis.connect();
 
 const services = await initializeServices(prisma, redis);
-export const client = new ExtendedClient(services);
+export const client = new ExtendedClient(services, redis);

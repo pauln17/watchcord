@@ -3,24 +3,28 @@ import "dotenv/config";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 
 import { commands } from "../commands";
+import { handleInteractionCreate } from "../events/interactionCreate";
+import { handleMessageCreate } from "../events/messageCreate";
+import type { RedisClientType } from "../lib/redis";
 import type { IServices } from "../services/initializeServices";
 import type { CommandType } from "../types/command";
-import { logger } from "../util/logger";
 
 export class ExtendedClient extends Client {
   commands: Collection<string, CommandType> = new Collection();
   services: IServices;
+  redis: RedisClientType;
 
-  constructor(services: IServices) {
+  constructor(services: IServices, redis: RedisClientType) {
     super({
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent,
       ],
     });
 
     this.services = services;
+    this.redis = redis;
     this.init();
   }
 
@@ -38,27 +42,11 @@ export class ExtendedClient extends Client {
 
   registerEvents() {
     this.on("interactionCreate", async (interaction) => {
-      if (interaction.isChatInputCommand()) {
-        const { commandName } = interaction;
-        const command = this.commands.get(commandName);
+      await handleInteractionCreate(this, interaction);
+    });
 
-        if (command) {
-          try {
-            await command.execute(interaction);
-          } catch (error) {
-            logger.error({
-              message: "Error Occurred During Command Execution",
-              error,
-            });
-
-            await interaction.reply({
-              content: "Error Occurred During Command Execution",
-              ephemeral: true,
-            });
-          }
-        }
-      }
-      return;
+    this.on("messageCreate", async (message) => {
+      await handleMessageCreate(this, message);
     });
   }
 }
