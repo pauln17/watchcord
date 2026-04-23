@@ -1,6 +1,6 @@
 import type { PrismaClient } from "../../generated/prisma/client";
 import type { RedisClientType } from "../lib/redis";
-import type { WatchCondition, WatchConditionType } from "../types/condition";
+import type { WatchCondition, WatchConditionType } from "../types";
 
 export interface IWatchConditionService {
   getWatchConditionById: (

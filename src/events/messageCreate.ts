@@ -1,8 +1,7 @@
 import { EmbedBuilder, type Message } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
-import type { WatchCondition } from "../types/condition";
-import type { Watch } from "../types/watch";
+import type { Watch,WatchCondition } from "../types";
 import type { ILogger } from "../util/logger";
 
 const matchesCondition = (condition: WatchCondition, message: Message) => {

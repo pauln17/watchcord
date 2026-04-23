@@ -1,6 +1,6 @@
 import type { PrismaClient } from "../../generated/prisma/client";
 import type { RedisClientType } from "../lib/redis";
-import type { Watch } from "../types/watch";
+import type { Watch } from "../types";
 
 export interface IWatchService {
   getAllWatches: () => Promise<Watch[]>;

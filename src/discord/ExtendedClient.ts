@@ -7,7 +7,7 @@ import { handleInteractionCreate } from "../events/interactionCreate";
 import { handleMessageCreate } from "../events/messageCreate";
 import type { RedisClientType } from "../lib/redis";
 import type { IServices } from "../services/initializeServices";
-import type { CommandType } from "../types/command";
+import type { CommandType } from "../types";
 import type { ILogger } from "../util/logger";
 
 export class ExtendedClient extends Client {
