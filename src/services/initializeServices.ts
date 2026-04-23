@@ -25,18 +25,29 @@ export const initializeServices = async (
 };
 
 const hydrateRedis = async (services: IServices, redis: RedisClientType) => {
+  for await (const keys of redis.scanIterator({ MATCH: "wc:*" })) {
+    if (keys.length > 0) {
+      await redis.del(keys);
+    }
+  }
+
   const watches = await services.watchService.getAllWatches();
 
   for (const watch of watches) {
-    await redis.set(`watches:${watch.id}`, JSON.stringify(watch));
+    await redis.set(`wc:watches:${watch.id}`, JSON.stringify(watch));
 
-    if (watch.scope === "GUILD") {
-      await redis.sAdd(`guilds:${watch.guildId}`, watch.id);
-    } else if (watch.scope === "CHANNEL" && watch.channelId) {
-      await redis.sAdd(
-        `guilds:${watch.guildId}:channels:${watch.channelId}`,
-        watch.id,
-      );
+    switch (watch.scope) {
+      case "GUILD":
+        await redis.sAdd(`wc:guilds:${watch.guildId}`, watch.id);
+        break;
+      case "CHANNEL":
+        await redis.sAdd(
+          `wc:guilds:${watch.guildId}:channels:${watch.channelId}`,
+          watch.id,
+        );
+        break;
     }
+
+    await redis.sAdd(`wc:guilds:${watch.guildId}:all`, watch.id);
   }
 };
