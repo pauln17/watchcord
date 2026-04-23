@@ -8,13 +8,15 @@ import { handleMessageCreate } from "../events/messageCreate";
 import type { RedisClientType } from "../lib/redis";
 import type { IServices } from "../services/initializeServices";
 import type { CommandType } from "../types/command";
+import type { ILogger } from "../util/logger";
 
 export class ExtendedClient extends Client {
   commands: Collection<string, CommandType> = new Collection();
   services: IServices;
   redis: RedisClientType;
+  logger: ILogger;
 
-  constructor(services: IServices, redis: RedisClientType) {
+  constructor(services: IServices, redis: RedisClientType, logger: ILogger) {
     super({
       intents: [
         GatewayIntentBits.Guilds,
@@ -25,6 +27,7 @@ export class ExtendedClient extends Client {
 
     this.services = services;
     this.redis = redis;
+    this.logger = logger;
     this.init();
   }
 
@@ -42,11 +45,11 @@ export class ExtendedClient extends Client {
 
   registerEvents() {
     this.on("interactionCreate", async (interaction) => {
-      await handleInteractionCreate(this, interaction);
+      await handleInteractionCreate(this, interaction, this.logger);
     });
 
     this.on("messageCreate", async (message) => {
-      await handleMessageCreate(this, message);
+      await handleMessageCreate(this, message, this.logger);
     });
   }
 }

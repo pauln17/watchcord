@@ -1,11 +1,12 @@
 import type { Interaction } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
-import { logger } from "../util/logger";
+import type { ILogger } from "../util/logger";
 
 export async function handleInteractionCreate(
   client: ExtendedClient,
   interaction: Interaction,
+  logger: ILogger,
 ) {
   if (!interaction.isChatInputCommand()) {
     return;

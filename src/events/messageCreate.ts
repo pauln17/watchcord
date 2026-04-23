@@ -3,7 +3,7 @@ import { EmbedBuilder, type Message } from "discord.js";
 import type { ExtendedClient } from "../discord/ExtendedClient";
 import type { WatchCondition } from "../types/condition";
 import type { Watch } from "../types/watch";
-import { logger } from "../util/logger";
+import type { ILogger } from "../util/logger";
 
 const matchesCondition = (condition: WatchCondition, message: Message) => {
   const { type, value, targetUserId, targetRoleId } = condition;
@@ -35,6 +35,7 @@ const sendNotification = async (
   watch: Watch,
   matchedConditions: WatchCondition[],
   message: Message,
+  logger: ILogger,
 ) => {
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
@@ -98,6 +99,7 @@ const sendNotification = async (
 export async function handleMessageCreate(
   client: ExtendedClient,
   message: Message,
+  logger: ILogger,
 ) {
   if (message.author.bot) {
     return;
@@ -135,7 +137,13 @@ export async function handleMessageCreate(
 
       if (matchedConditions.length > 0) {
         console.log(matchedConditions);
-        await sendNotification(client, watch, matchedConditions, message);
+        await sendNotification(
+          client,
+          watch,
+          matchedConditions,
+          message,
+          logger,
+        );
       }
     }),
   );
