@@ -44,6 +44,9 @@ export const editWatch = async (
     });
   }
 
+  const titleCase = (str: string) =>
+    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
+
   const updated = await services.watchService.updateWatch(watchId, userId, {
     ...(name != null ? { name } : {}),
     ...(scope != null ? { scope } : {}),
@@ -67,11 +70,17 @@ export const editWatch = async (
     .addFields(
       { name: "Name", value: `${updated.name}` },
       { name: "ID", value: `\`${updated.id}\`` },
+      { name: "Scope", value: `${titleCase(updated.scope)}` },
+      { name: "Server", value: `${interaction.guild?.name}` },
+      ...(updated.scope === "CHANNEL" && updated.channelId
+        ? [{ name: "Channel", value: `<#${updated.channelId}>` }]
+        : []),
     )
     .setFooter({
       text: "Watchcord",
       iconURL: interaction.client.user?.displayAvatarURL() ?? "",
-    });
+    })
+    .setTimestamp(new Date());
 
   return await interaction.reply({
     embeds: [notificationEmbed],

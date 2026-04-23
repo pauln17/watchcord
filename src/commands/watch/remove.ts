@@ -11,9 +11,14 @@ export const removeWatch = async (
   services: IServices,
 ) => {
   const watchId = interaction.options.getString("id", true);
-  const userId = interaction.user.id;
 
-  const existing = await services.watchService.getWatchById(watchId, userId);
+  const titleCase = (str: string) =>
+    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
+
+  const existing = await services.watchService.getWatchById(
+    watchId,
+    interaction.user.id,
+  );
 
   if (!existing) {
     return await interaction.reply({
@@ -22,7 +27,10 @@ export const removeWatch = async (
     });
   }
 
-  const watch = await services.watchService.deleteWatch(watchId, userId);
+  const watch = await services.watchService.deleteWatch(
+    watchId,
+    interaction.user.id,
+  );
   if (!watch) {
     return await interaction.reply({
       content: "Failed to remove watch",
@@ -37,11 +45,17 @@ export const removeWatch = async (
     .addFields(
       { name: "Name", value: `${watch.name}` },
       { name: "ID", value: `\`${watch.id}\`` },
+      { name: "Scope", value: `${titleCase(watch.scope)}` },
+      { name: "Server", value: `${interaction.guild?.name}` },
+      ...(watch.scope === "CHANNEL" && watch.channelId
+        ? [{ name: "Channel", value: `<#${watch.channelId}>` }]
+        : []),
     )
     .setFooter({
       text: "Watchcord",
       iconURL: interaction.client.user?.displayAvatarURL() ?? "",
-    });
+    })
+    .setTimestamp(new Date());
 
   return await interaction.reply({
     embeds: [notificationEmbed],

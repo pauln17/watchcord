@@ -1,4 +1,5 @@
 import {
+  ChannelType,
   ChatInputCommandInteraction,
   InteractionContextType,
   MessageFlags,
@@ -25,6 +26,7 @@ export const data = new SlashCommandBuilder()
         option
           .setName("channel")
           .setDescription("List your watches by channel")
+          .addChannelTypes(ChannelType.GuildText)
           .setRequired(false),
       ),
   )
@@ -65,6 +67,7 @@ export const data = new SlashCommandBuilder()
         option
           .setName("channel")
           .setDescription("The channel to watch")
+          .addChannelTypes(ChannelType.GuildText)
           .setRequired(false),
       ),
   )
@@ -99,6 +102,7 @@ export const data = new SlashCommandBuilder()
         option
           .setName("channel")
           .setDescription("The channel to watch")
+          .addChannelTypes(ChannelType.GuildText)
           .setRequired(false),
       ),
   )

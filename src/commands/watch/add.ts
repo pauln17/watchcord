@@ -35,6 +35,9 @@ export const addWatch = async (
     });
   }
 
+  const titleCase = (str: string) =>
+    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
+
   const watch = await services.watchService.createWatch({
     name,
     userId: interaction.user.id,
@@ -55,6 +58,11 @@ export const addWatch = async (
     .addFields(
       { name: "Name", value: `${name}` },
       { name: "ID", value: `\`${watch.id}\`` },
+      { name: "Scope", value: `${titleCase(watch.scope)}` },
+      { name: "Server", value: `${interaction.guild?.name}` },
+      ...(watch.scope === "CHANNEL" && watch.channelId
+        ? [{ name: "Channel", value: `<#${watch.channelId}>` }]
+        : []),
     )
     .setFooter({
       text: "Watchcord",

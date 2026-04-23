@@ -11,8 +11,14 @@ export const viewWatch = async (
   services: IServices,
 ) => {
   const watchId = interaction.options.getString("id", true);
-  const userId = interaction.user.id;
-  const watch = await services.watchService.getWatchById(watchId, userId);
+
+  const titleCase = (str: string) =>
+    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
+
+  const watch = await services.watchService.getWatchById(
+    watchId,
+    interaction.user.id,
+  );
 
   if (!watch) {
     return await interaction.reply({
@@ -20,10 +26,6 @@ export const viewWatch = async (
       flags: MessageFlags.Ephemeral,
     });
   }
-
-  const watchingValue = watch.channelId
-    ? `Channel ${interaction.guild?.channels.cache.get(watch.channelId)?.name} <#${watch.channelId}>`
-    : "Guild-Wide";
 
   let conditions = "";
   watch.conditions.forEach((condition) => {
@@ -46,18 +48,12 @@ export const viewWatch = async (
     .addFields(
       { name: "Name", value: `${watch.name}` },
       { name: "ID", value: `\`${watch.id}\`` },
-      {
-        name: "Scope",
-        value: `${watch.scope.toLowerCase().charAt(0).toUpperCase() + watch.scope.toLowerCase().slice(1)}`,
-      },
-      {
-        name: "Watching",
-        value: watch.scope === "CHANNEL" ? `${watchingValue}` : "Guild-Wide",
-      },
-      {
-        name: "Conditions",
-        value: conditions ? conditions : "Empty",
-      },
+      { name: "Scope", value: `${titleCase(watch.scope)}` },
+      { name: "Server", value: `${interaction.guild?.name}` },
+      ...(watch.scope === "CHANNEL" && watch.channelId
+        ? [{ name: "Channel", value: `<#${watch.channelId}>` }]
+        : []),
+      { name: "Conditions", value: conditions ? conditions : "Empty" },
     )
     .setFooter({
       text: "Watchcord",

@@ -15,6 +15,9 @@ export const listWatch = async (
     ChannelType.GuildText,
   ]);
 
+  const titleCase = (str: string) =>
+    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
+
   const watches = channel
     ? await services.watchService.getUserWatchesByGuildAndChannel(
         interaction.guildId!,
@@ -33,31 +36,34 @@ export const listWatch = async (
     });
   }
 
+  const title = channel
+    ? `Watch List of Channel: ${channel.name} <#${channel.id}>`
+    : `Watch List of Server: ${interaction.guild!.name}`;
+
+  const description = watches
+    .map((watch) => {
+      return [
+        `**Name:** ${watch.name}`,
+        `**ID:** \`${watch.id}\``,
+        `**Scope:** ${titleCase(watch.scope)}`,
+        `**Server:** ${interaction.guild?.name ?? `\`${watch.guildId}\``}`,
+        ...(watch.scope === "CHANNEL" && watch.channelId
+          ? [`**Channel:** <#${watch.channelId}>`]
+          : []),
+        `**View:** \`/watch view id: ${watch.id}\``,
+      ].join("\n");
+    })
+    .join("\n\n---\n\n");
+
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
-    .setTitle(`Watch List of Server: ${interaction.guild!.name}`)
+    .setTitle(title)
+    .setDescription(description)
     .setFooter({
       text: "Watchcord",
       iconURL: interaction.client.user?.displayAvatarURL() ?? "",
     })
     .setTimestamp(new Date());
-
-  let description = "";
-  watches.forEach((watch) => {
-    const watchingValue = watch.channelId
-      ? `Channel ${interaction.guild?.channels.cache.get(watch.channelId)?.name} <#${watch.channelId}>`
-      : "Guild-Wide";
-
-    description += [
-      `**${watch.name}**`,
-      `Scope: ${watch.scope.toLowerCase().charAt(0).toUpperCase() + watch.scope.toLowerCase().slice(1)}`,
-      `Watching: ${watchingValue}`,
-      `View: \`/watch view id: ${watch.id}\``,
-      "\n",
-    ].join("\n");
-  });
-
-  notificationEmbed.setDescription(description);
 
   return await interaction.reply({
     embeds: [notificationEmbed],
