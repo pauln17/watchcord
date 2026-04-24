@@ -6,11 +6,6 @@ export interface IWatchService {
   getAllWatches: () => Promise<Watch[]>;
   getWatchById: (id: string, userId: string) => Promise<Watch | null>;
   getUserWatchesByGuild: (guildId: string, userId: string) => Promise<Watch[]>;
-  getUserWatchesByGuildAndChannel: (
-    guildId: string,
-    channelId: string,
-    userId: string,
-  ) => Promise<Watch[]>;
   createWatch: (data: Omit<Watch, "id" | "conditions">) => Promise<Watch>;
   updateWatch: (
     id: string,
@@ -36,37 +31,46 @@ export class WatchService implements IWatchService {
     switch (operation) {
       case "CREATE":
         await this.redis.set(`wc:watches:${watch.id}`, JSON.stringify(watch));
+        await this.redis.sAdd(
+          `wc:users:${watch.userId}:guilds:${watch.guildId}`,
+          watch.id,
+        );
         switch (watch.scope) {
           case "GUILD":
-            await this.redis.sAdd(`wc:guilds:${watch.guildId}`, watch.id);
+            await this.redis.sAdd(
+              `wc:scopes:guilds:${watch.guildId}`,
+              watch.id,
+            );
             break;
           case "CHANNEL":
             if (watch.channelId) {
               await this.redis.sAdd(
-                `wc:guilds:${watch.guildId}:channels:${watch.channelId}`,
+                `wc:scopes:channels:${watch.channelId}`,
                 watch.id,
               );
             }
             break;
         }
-        await this.redis.sAdd(`wc:guilds:${watch.guildId}:all`, watch.id);
         break;
       case "DELETE":
         await this.redis.del(`wc:watches:${watch.id}`);
+        await this.redis.sRem(
+          `wc:users:${watch.userId}:guilds:${watch.guildId}`,
+          watch.id,
+        );
         switch (watch.scope) {
           case "GUILD":
-            await this.redis.sRem(`wc:guilds:${watch.guildId}`, watch.id);
+            await this.redis.sRem(`wc:scopes:guilds:${watch.guildId}`, watch.id);
             break;
           case "CHANNEL":
             if (watch.channelId) {
               await this.redis.sRem(
-                `wc:guilds:${watch.guildId}:channels:${watch.channelId}`,
+                `wc:scopes:channels:${watch.channelId}`,
                 watch.id,
               );
             }
             break;
         }
-        await this.redis.sRem(`wc:guilds:${watch.guildId}:all`, watch.id);
         break;
     }
   };
@@ -102,53 +106,20 @@ export class WatchService implements IWatchService {
     guildId: string,
     userId: string,
   ): Promise<Watch[]> => {
-    const ids = await this.redis.sMembers(`wc:guilds:${guildId}:all`);
-    if (ids.length > 0) {
-      const keys = ids.map((id) => `wc:watches:${id}`);
-      const cached = await this.redis.mGet(keys);
-      const watches = cached
-        .filter((watch): watch is string => watch !== null)
-        .map((watch) => JSON.parse(watch) as Watch)
-        .filter((watch) => watch.userId === userId);
-      if (watches.length > 0) return watches;
-    }
-
-    const watches = await this.prisma.watch.findMany({
-      where: { userId, guildId },
-      include: {
-        conditions: true,
-      },
-    });
-
-    if (watches.length > 0) {
-      for (const watch of watches) {
-        await this.updateRedis("CREATE", watch);
-      }
-    }
-
-    return watches;
-  };
-
-  getUserWatchesByGuildAndChannel = async (
-    guildId: string,
-    channelId: string,
-    userId: string,
-  ): Promise<Watch[]> => {
     const ids = await this.redis.sMembers(
-      `wc:guilds:${guildId}:channels:${channelId}`,
+      `wc:users:${userId}:guilds:${guildId}`,
     );
     if (ids.length > 0) {
       const keys = ids.map((id) => `wc:watches:${id}`);
       const cached = await this.redis.mGet(keys);
       const watches = cached
         .filter((watch): watch is string => watch !== null)
-        .map((watch) => JSON.parse(watch) as Watch)
-        .filter((watch) => watch.userId === userId);
+        .map((watch) => JSON.parse(watch) as Watch);
       if (watches.length > 0) return watches;
     }
 
     const watches = await this.prisma.watch.findMany({
-      where: { userId, guildId, channelId },
+      where: { userId, guildId },
       include: {
         conditions: true,
       },

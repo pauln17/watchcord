@@ -1,13 +1,10 @@
-import { EmbedBuilder, GuildMember, type Message } from "discord.js";
+import { EmbedBuilder, type Message } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
 import type { Watch, WatchCondition } from "../types";
 import type { ILogger } from "../util/logger";
 
-const matchesCondition = async (
-  condition: WatchCondition,
-  message: Message,
-) => {
+const matchesCondition = (condition: WatchCondition, message: Message) => {
   const { type, value, targetUserId, targetRoleId } = condition;
 
   if (targetUserId && targetUserId !== message.author.id) return false;
@@ -33,7 +30,6 @@ const sendNotification = async (
   watch: Watch,
   matchedConditions: WatchCondition[],
   message: Message,
-  logger: ILogger,
 ) => {
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
@@ -83,15 +79,8 @@ const sendNotification = async (
     })
     .setTimestamp(new Date());
 
-  try {
-    const user = await client.users.fetch(watch.userId);
-    await user.send({ embeds: [notificationEmbed] });
-  } catch (error) {
-    logger.error({
-      message: "Failed to send watch notification DM",
-      error: { watchId: watch.id, userId: watch.userId, cause: error },
-    });
-  }
+  const user = await client.users.fetch(watch.userId);
+  await user.send({ embeds: [notificationEmbed] });
 };
 
 export async function handleMessageCreate(
@@ -103,23 +92,20 @@ export async function handleMessageCreate(
     return;
   }
 
+  const redis = client.redis;
+
   const { guildId, channelId, content } = message;
   if (!guildId || !channelId || !content) {
     return;
   }
 
-  const redis = client.redis;
-
   const watchIds = Array.from(
     new Set([
-      ...(await redis.sMembers(`wc:guilds:${guildId}`)),
-      ...(await redis.sMembers(`wc:guilds:${guildId}:channels:${channelId}`)),
+      ...(await redis.sMembers(`wc:scopes:guilds:${guildId}`)),
+      ...(await redis.sMembers(`wc:scopes:channels:${channelId}`)),
     ]),
   );
-
-  if (watchIds.length === 0) {
-    return;
-  }
+  if (watchIds.length === 0) return;
 
   const watches: Watch[] = (
     await redis.mGet(watchIds.map((id) => `wc:watches:${id}`))
@@ -134,19 +120,12 @@ export async function handleMessageCreate(
       );
 
       if (matchedConditions.length > 0) {
-        console.log(matchedConditions);
         try {
-          await sendNotification(
-            client,
-            watch,
-            matchedConditions,
-            message,
-            logger,
-          );
+          await sendNotification(client, watch, matchedConditions, message);
         } catch (error) {
           logger.error({
             message: "Failed to send watch notification",
-            error: { watchId: watch.id, userId: watch.userId, cause: error },
+            error,
           });
         }
       }

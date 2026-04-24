@@ -19,16 +19,7 @@ export const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild)
   // List Subcommand
   .addSubcommand((subcommand) =>
-    subcommand
-      .setName("list")
-      .setDescription("List your watches")
-      .addChannelOption((option) =>
-        option
-          .setName("channel")
-          .setDescription("List your watches by channel")
-          .addChannelTypes(ChannelType.GuildText)
-          .setRequired(false),
-      ),
+    subcommand.setName("list").setDescription("List your watches"),
   )
   // View Subcommand
   .addSubcommand((subcommand) =>

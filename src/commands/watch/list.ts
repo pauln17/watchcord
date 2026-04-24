@@ -11,23 +11,13 @@ export const listWatch = async (
   interaction: ChatInputCommandInteraction,
   services: IServices,
 ) => {
-  const channel = interaction.options.getChannel("channel", false, [
-    ChannelType.GuildText,
-  ]);
-
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
-  const watches = channel
-    ? await services.watchService.getUserWatchesByGuildAndChannel(
-        interaction.guildId!,
-        channel.id,
-        interaction.user.id,
-      )
-    : await services.watchService.getUserWatchesByGuild(
-        interaction.guildId!,
-        interaction.user.id,
-      );
+  const watches = await services.watchService.getUserWatchesByGuild(
+    interaction.guildId!,
+    interaction.user.id,
+  );
 
   if (!watches || watches.length === 0) {
     return await interaction.reply({
@@ -35,10 +25,6 @@ export const listWatch = async (
       flags: MessageFlags.Ephemeral,
     });
   }
-
-  const title = channel
-    ? `Watch List of Channel: ${channel.name} <#${channel.id}>`
-    : `Watch List of Server: ${interaction.guild!.name}`;
 
   const description = watches
     .map((watch) => {
@@ -57,7 +43,7 @@ export const listWatch = async (
 
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
-    .setTitle(title)
+    .setTitle(`Watch List of Server: ${interaction.guild!.name}`)
     .setDescription(description)
     .setFooter({
       text: "Watchcord",

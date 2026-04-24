@@ -35,19 +35,18 @@ const hydrateRedis = async (services: IServices, redis: RedisClientType) => {
 
   for (const watch of watches) {
     await redis.set(`wc:watches:${watch.id}`, JSON.stringify(watch));
+    await redis.sAdd(
+      `wc:users:${watch.userId}:guilds:${watch.guildId}`,
+      watch.id,
+    );
 
     switch (watch.scope) {
       case "GUILD":
-        await redis.sAdd(`wc:guilds:${watch.guildId}`, watch.id);
+        await redis.sAdd(`wc:scopes:guilds:${watch.guildId}`, watch.id);
         break;
       case "CHANNEL":
-        await redis.sAdd(
-          `wc:guilds:${watch.guildId}:channels:${watch.channelId}`,
-          watch.id,
-        );
+        await redis.sAdd(`wc:scopes:channels:${watch.channelId}`, watch.id);
         break;
     }
-
-    await redis.sAdd(`wc:guilds:${watch.guildId}:all`, watch.id);
   }
 };
