@@ -1,5 +1,4 @@
 import {
-  ChannelType,
   ChatInputCommandInteraction,
   EmbedBuilder,
   MessageFlags,
@@ -14,9 +13,9 @@ export const listWatch = async (
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
-  const watches = await services.watchService.getUserWatchesByGuild(
-    interaction.guildId!,
+  const watches = await services.watchService.getUserWatches(
     interaction.user.id,
+    interaction.guildId!,
   );
 
   if (!watches || watches.length === 0) {

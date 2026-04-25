@@ -15,25 +15,13 @@ export const removeWatch = async (
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
-  const existing = await services.watchService.getWatchById(
-    watchId,
-    interaction.user.id,
-  );
-
-  if (!existing) {
-    return await interaction.reply({
-      content: "Watch not found",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  const watch = await services.watchService.deleteWatch(
+  const watch = await services.watchService.deleteUserWatch(
     watchId,
     interaction.user.id,
   );
   if (!watch) {
     return await interaction.reply({
-      content: "Failed to remove watch",
+      content: "Watch not found",
       flags: MessageFlags.Ephemeral,
     });
   }

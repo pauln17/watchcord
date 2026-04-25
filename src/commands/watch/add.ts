@@ -38,15 +38,12 @@ export const addWatch = async (
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
-  const watch = await services.watchService.createWatch({
+  const watch = await services.watchService.createUserWatch({
     name,
     userId: interaction.user.id,
     scope,
     guildId: interaction.guildId!,
-    ...(scope === "CHANNEL" && channel != null
-      ? { channelId: channel.id }
-      : {}),
-    ...(scope === "GUILD" && channel == null ? { channelId: null } : {}),
+    channelId: channel?.id ?? null,
   });
 
   const notificationEmbed = new EmbedBuilder()

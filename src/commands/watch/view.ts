@@ -15,7 +15,7 @@ export const viewWatch = async (
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
-  const watch = await services.watchService.getWatchById(
+  const watch = await services.watchService.getUserWatch(
     watchId,
     interaction.user.id,
   );

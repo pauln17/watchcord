@@ -1,28 +1,24 @@
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { RedisClientType } from "../lib/redis";
+import type { IWatchRepository } from "../repositories";
 import type { Watch } from "../types";
 
 export interface IWatchService {
-  getAllWatches: () => Promise<Watch[]>;
-  getWatchById: (id: string, userId: string) => Promise<Watch | null>;
-  getUserWatchesByGuild: (guildId: string, userId: string) => Promise<Watch[]>;
-  createWatch: (data: Omit<Watch, "id" | "conditions">) => Promise<Watch>;
-  updateWatch: (
+  getUserWatch: (id: string, userId: string) => Promise<Watch | null>;
+  getUserWatches: (userId: string, guildId: string) => Promise<Watch[]>;
+  createUserWatch: (data: Omit<Watch, "id" | "conditions">) => Promise<Watch>;
+  updateUserWatch: (
     id: string,
     userId: string,
-    data: Partial<Omit<Watch, "id" | "conditions">>,
+    data: Partial<Pick<Watch, "name" | "scope" | "channelId">>,
   ) => Promise<Watch | null>;
-  deleteWatch: (id: string, userId: string) => Promise<Watch | null>;
+  deleteUserWatch: (id: string, userId: string) => Promise<Watch | null>;
 }
 
 export class WatchService implements IWatchService {
-  private readonly prisma: PrismaClient;
-  private readonly redis: RedisClientType;
-
-  constructor(prisma: PrismaClient, redis: RedisClientType) {
-    this.prisma = prisma;
-    this.redis = redis;
-  }
+  constructor(
+    private readonly watchRepository: IWatchRepository,
+    private readonly redis: RedisClientType,
+  ) {}
 
   private updateRedis = async (
     operation: "CREATE" | "DELETE",
@@ -78,36 +74,26 @@ export class WatchService implements IWatchService {
     }
   };
 
-  getAllWatches = async (): Promise<Watch[]> => {
-    return await this.prisma.watch.findMany({
-      include: {
-        conditions: true,
-      },
-    });
-  };
-
-  getWatchById = async (id: string, userId: string): Promise<Watch | null> => {
+  getUserWatch = async (id: string, userId: string): Promise<Watch | null> => {
     const cached = await this.redis.get(`wc:watches:${id}`);
     if (cached) {
       const watch = JSON.parse(cached) as Watch;
       if (watch.userId === userId) return watch;
     }
 
-    const watch = await this.prisma.watch.findFirst({
-      where: { id, userId },
-      include: { conditions: true },
-    });
-
-    if (watch) {
-      await this.updateRedis("CREATE", watch);
+    const watch = await this.watchRepository.findById(id);
+    if (!watch || watch.userId !== userId) {
+      return null;
     }
+
+    await this.updateRedis("CREATE", watch);
 
     return watch;
   };
 
-  getUserWatchesByGuild = async (
-    guildId: string,
+  getUserWatches = async (
     userId: string,
+    guildId: string,
   ): Promise<Watch[]> => {
     const ids = await this.redis.sMembers(
       `wc:users:${userId}:guilds:${guildId}`,
@@ -121,12 +107,10 @@ export class WatchService implements IWatchService {
       if (watches.length > 0) return watches;
     }
 
-    const watches = await this.prisma.watch.findMany({
-      where: { userId, guildId },
-      include: {
-        conditions: true,
-      },
-    });
+    const watches = await this.watchRepository.findManyByUserIdAndGuildId(
+      userId,
+      guildId,
+    );
 
     if (watches.length > 0) {
       for (const watch of watches) {
@@ -137,14 +121,12 @@ export class WatchService implements IWatchService {
     return watches;
   };
 
-  createWatch = async (
+  createUserWatch = async (
     data: Omit<Watch, "id" | "conditions">,
   ): Promise<Watch> => {
-    const watch = await this.prisma.watch.create({
-      data,
-      include: {
-        conditions: true,
-      },
+    const watch = await this.watchRepository.create({
+      ...data,
+      channelId: data.scope === "GUILD" ? null : (data.channelId ?? null),
     });
 
     await this.updateRedis("CREATE", watch);
@@ -152,31 +134,28 @@ export class WatchService implements IWatchService {
     return watch;
   };
 
-  updateWatch = async (
+  updateUserWatch = async (
     id: string,
     userId: string,
-    data: Partial<Omit<Watch, "id" | "conditions">>,
+    data: Partial<Pick<Watch, "name" | "scope" | "channelId">>,
   ): Promise<Watch | null> => {
-    const existing = await this.getWatchById(id, userId);
+    const existing = await this.getUserWatch(id, userId);
     if (!existing) {
       return null;
     }
 
-    const updated = await this.prisma.watch.update({
-      where: { id: existing.id },
-      data: {
+    const updatePayload: Partial<Pick<Watch, "name" | "scope" | "channelId">> =
+      {
         ...(data.name != null ? { name: data.name } : {}),
         ...(data.scope != null ? { scope: data.scope } : {}),
-        ...(data.scope === "GUILD" ? { channelId: null } : {}),
-        ...((data.scope === "CHANNEL" || data.scope == null) &&
-        data.channelId != null
-          ? { channelId: data.channelId }
-          : {}),
-      },
-      include: {
-        conditions: true,
-      },
-    });
+        ...(data.scope === "GUILD"
+          ? { channelId: null }
+          : data.channelId !== undefined
+            ? { channelId: data.channelId }
+            : {}),
+      };
+
+    const updated = await this.watchRepository.updateById(id, updatePayload);
 
     await this.updateRedis("DELETE", existing);
     await this.updateRedis("CREATE", updated);
@@ -184,18 +163,16 @@ export class WatchService implements IWatchService {
     return updated;
   };
 
-  deleteWatch = async (id: string, userId: string): Promise<Watch | null> => {
-    const existing = await this.getWatchById(id, userId);
+  deleteUserWatch = async (
+    id: string,
+    userId: string,
+  ): Promise<Watch | null> => {
+    const existing = await this.getUserWatch(id, userId);
     if (!existing) {
       return null;
     }
 
-    const deleted = await this.prisma.watch.delete({
-      where: { id: existing.id },
-      include: {
-        conditions: true,
-      },
-    });
+    const deleted = await this.watchRepository.deleteById(id);
 
     await this.updateRedis("DELETE", existing);
 

@@ -47,13 +47,10 @@ export const editWatch = async (
   const titleCase = (str: string) =>
     str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
-  const updated = await services.watchService.updateWatch(watchId, userId, {
+  const updated = await services.watchService.updateUserWatch(watchId, userId, {
     ...(name != null ? { name } : {}),
     ...(scope != null ? { scope } : {}),
-    ...(scope === "GUILD" ? { channelId: null } : {}),
-    ...((scope === "CHANNEL" || scope == null) && channel != null
-      ? { channelId: channel.id }
-      : {}),
+    ...(channel != null ? { channelId: channel.id } : {}),
   });
 
   if (!updated) {
