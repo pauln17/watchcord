@@ -2,26 +2,26 @@ import type { PrismaClient } from "../../generated/prisma/client";
 import type { RedisClientType } from "../lib/redis";
 import type { WatchCondition, WatchConditionType } from "../types";
 
-export interface IWatchConditionService {
-  getWatchConditionById: (
+export interface IConditionService {
+  getConditionById: (
     id: string,
     userId: string,
   ) => Promise<WatchCondition | null>;
-  createWatchCondition: (
-    watchCondition: WatchCondition,
+  createCondition: (
+    condition: Omit<WatchCondition, "id">,
   ) => Promise<WatchCondition>;
-  updateWatchCondition: (
+  updateCondition: (
     id: string,
-    watchCondition: WatchCondition,
+    condition: WatchCondition,
     userId: string,
   ) => Promise<WatchCondition | null>;
-  deleteWatchCondition: (
+  deleteCondition: (
     id: string,
     userId: string,
   ) => Promise<WatchCondition | null>;
 }
 
-export class WatchConditionService implements IWatchConditionService {
+export class ConditionService implements IConditionService {
   private readonly prisma: PrismaClient;
   private readonly redis: RedisClientType;
 
@@ -30,7 +30,7 @@ export class WatchConditionService implements IWatchConditionService {
     this.redis = redis;
   }
 
-  getWatchConditionById = async (
+  getConditionById = async (
     id: string,
     userId: string,
   ): Promise<WatchCondition | null> => {
@@ -39,42 +39,42 @@ export class WatchConditionService implements IWatchConditionService {
     });
   };
 
-  createWatchCondition = async (
-    watchCondition: Omit<WatchCondition, "id">,
+  createCondition = async (
+    condition: Omit<WatchCondition, "id">,
   ): Promise<WatchCondition> => {
     return await this.prisma.watchCondition.create({
       data: {
-        watchId: watchCondition.watchId,
-        name: watchCondition.name,
-        type: watchCondition.type as WatchConditionType,
-        targetUserId: watchCondition.targetUserId ?? null,
-        targetRoleId: watchCondition.targetRoleId ?? null,
-        value: watchCondition.value,
+        watchId: condition.watchId,
+        name: condition.name,
+        type: condition.type as WatchConditionType,
+        targetUserId: condition.targetUserId ?? null,
+        targetRoleId: condition.targetRoleId ?? null,
+        value: condition.value,
       },
     });
   };
 
-  updateWatchCondition = async (
+  updateCondition = async (
     id: string,
-    watchCondition: WatchCondition,
+    condition: WatchCondition,
     userId: string,
   ): Promise<WatchCondition | null> => {
-    const existing = await this.getWatchConditionById(id, userId);
+    const existing = await this.getConditionById(id, userId);
     if (!existing) {
       return null;
     }
 
     return await this.prisma.watchCondition.update({
       where: { id: existing.id, watch: { userId } },
-      data: watchCondition,
+      data: condition,
     });
   };
 
-  deleteWatchCondition = async (
+  deleteCondition = async (
     id: string,
     userId: string,
   ): Promise<WatchCondition | null> => {
-    const existing = await this.getWatchConditionById(id, userId);
+    const existing = await this.getConditionById(id, userId);
     if (!existing) {
       return null;
     }

@@ -1,11 +1,7 @@
 import { ExtendedClient } from "../discord/ExtendedClient";
 import { prisma } from "../lib/prisma";
 import { redis } from "../lib/redis";
-import {
-  type IServices,
-  WatchConditionService,
-  WatchService,
-} from "../services";
+import { ConditionService, type IServices, WatchService } from "../services";
 import { logger } from "../util/logger";
 
 export const startup = async (): Promise<ExtendedClient> => {
@@ -13,7 +9,7 @@ export const startup = async (): Promise<ExtendedClient> => {
 
   const services: IServices = {
     watchService: new WatchService(prisma, redis),
-    watchConditionService: new WatchConditionService(prisma, redis),
+    conditionService: new ConditionService(prisma, redis),
   };
 
   return new ExtendedClient(services, redis, logger);
