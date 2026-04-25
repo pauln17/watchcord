@@ -4,7 +4,7 @@ import {
   MessageFlags,
 } from "discord.js";
 
-import type { IServices } from "../../services/initializeServices";
+import type { IServices } from "../../services";
 
 export const editWatch = async (
   interaction: ChatInputCommandInteraction,

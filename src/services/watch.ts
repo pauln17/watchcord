@@ -60,7 +60,10 @@ export class WatchService implements IWatchService {
         );
         switch (watch.scope) {
           case "GUILD":
-            await this.redis.sRem(`wc:scopes:guilds:${watch.guildId}`, watch.id);
+            await this.redis.sRem(
+              `wc:scopes:guilds:${watch.guildId}`,
+              watch.id,
+            );
             break;
           case "CHANNEL":
             if (watch.channelId) {

@@ -3,7 +3,7 @@ import type {
   RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
 
-export type CommandType = {
+export type Command = {
   data: RESTPostAPIApplicationCommandsJSONBody;
   execute: (interaction: ChatInputCommandInteraction) => Promise<unknown>;
 };

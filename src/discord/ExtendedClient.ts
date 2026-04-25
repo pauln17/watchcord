@@ -6,12 +6,12 @@ import { commands } from "../commands";
 import { handleInteractionCreate } from "../events/interactionCreate";
 import { handleMessageCreate } from "../events/messageCreate";
 import type { RedisClientType } from "../lib/redis";
-import type { IServices } from "../services/initializeServices";
-import type { CommandType } from "../types";
+import type { IServices } from "../services";
+import type { Command } from "../types";
 import type { ILogger } from "../util/logger";
 
 export class ExtendedClient extends Client {
-  commands: Collection<string, CommandType> = new Collection();
+  commands: Collection<string, Command> = new Collection();
   services: IServices;
   redis: RedisClientType;
   logger: ILogger;
