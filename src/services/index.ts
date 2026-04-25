@@ -1,3 +1,3 @@
-export * from "./condition";
+export * from "./conditionService";
 export * from "./types";
-export * from "./watch";
+export * from "./watchService";

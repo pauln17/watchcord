@@ -1,5 +1,5 @@
-import type { ConditionService } from "./condition";
-import type { WatchService } from "./watch";
+import type { ConditionService } from "./conditionService";
+import type { WatchService } from "./watchService";
 
 export interface IServices {
   watchService: WatchService;
