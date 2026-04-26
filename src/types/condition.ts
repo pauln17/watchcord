@@ -6,7 +6,7 @@ export interface WatchCondition {
   watchId: string;
   name: string;
   type: WatchConditionType;
-  targetUserId?: string | null;
-  targetRoleId?: string | null;
+  targetUserIds: string[];
+  targetRoleIds: string[];
   value: string;
 }

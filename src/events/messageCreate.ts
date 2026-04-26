@@ -1,15 +1,20 @@
 import { EmbedBuilder, type Message } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
-import type { RedisSearchResult, Watch, WatchCondition } from "../types";
+import type { Watch, WatchCondition } from "../types";
 import type { ILogger } from "../util/logger";
 import { titleCase } from "../util/strings";
 
 const matchesCondition = (condition: WatchCondition, message: Message) => {
-  const { type, value, targetUserId, targetRoleId } = condition;
+  const { type, value, targetUserIds, targetRoleIds } = condition;
 
-  if (targetUserId && targetUserId !== message.author.id) return false;
-  if (targetRoleId && !message.member?.roles.cache.has(targetRoleId))
+  if (targetUserIds.length > 0 && !targetUserIds.includes(message.author.id))
+    return false;
+  if (
+    targetRoleIds.length > 0 &&
+    (!message.member ||
+      !targetRoleIds.some((roleId) => message.member!.roles.cache.has(roleId)))
+  )
     return false;
 
   switch (type) {
@@ -22,7 +27,7 @@ const matchesCondition = (condition: WatchCondition, message: Message) => {
         return false;
       }
     default:
-      return false;
+      return true;
   }
 };
 
@@ -57,16 +62,26 @@ const sendNotification = async (
         name: `Conditions Matched (${matchedConditions.length})`,
         value: matchedConditions
           .map((condition) =>
-            [
-              `**Name:** ${condition.name}`,
-              condition.targetUserId &&
-                `**Condition User:** <@${condition.targetUserId}>`,
-              condition.targetRoleId &&
-                `**Condition Role:** <@&${condition.targetRoleId}>`,
-              `**${titleCase(condition.type)}:** ${condition.value}`,
-            ]
-              .filter(Boolean)
-              .join("\n"),
+            (() => {
+              const lines: string[] = [
+                `**Name:** ${condition.name}`,
+                `**${titleCase(condition.type)}:** ${condition.value}`,
+              ];
+
+              if (condition.targetUserIds.length > 0) {
+                lines.push(
+                  `**Condition User(s):** ${condition.targetUserIds.map((id) => `<@${id}>`).join(", ")}`,
+                );
+              }
+
+              if (condition.targetRoleIds.length > 0) {
+                lines.push(
+                  `**Condition Role(s):** ${condition.targetRoleIds.map((id) => `<@&${id}>`).join(", ")}`,
+                );
+              }
+
+              return lines.join("\n");
+            })(),
           )
           .join("\n\n"),
       },
@@ -86,12 +101,6 @@ export async function handleMessageCreate(
   message: Message,
   logger: ILogger,
 ) {
-  if (message.author.bot) {
-    return;
-  }
-
-  const redis = client.redis;
-
   const { guildId, channelId, content } = message;
   if (!guildId || !channelId || !content) return;
 

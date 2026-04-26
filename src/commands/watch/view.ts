@@ -31,8 +31,10 @@ export const viewWatch = async (
       `**${condition.name}**`,
       `Type: ${condition.type}`,
       `Value: ${condition.value}`,
-      condition.targetUserId && `User: <@${condition.targetUserId}>`,
-      condition.targetRoleId && `Role: <@&${condition.targetRoleId}>`,
+      condition.targetUserIds.length > 0 &&
+        `User(s): ${condition.targetUserIds.map((id) => `<@${id}>`).join(", ")}`,
+      condition.targetRoleIds.length > 0 &&
+        `Role(s): ${condition.targetRoleIds.map((id) => `<@&${id}>`).join(", ")}`,
       `View: \`/condition view id: ${condition.id}\``,
       "\n",
     ]

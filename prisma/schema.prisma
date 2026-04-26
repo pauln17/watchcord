@@ -17,7 +17,7 @@ model Watch {
   userId    String
   name      String
   scope     ScopeType
-  guildId   String 
+  guildId   String
   channelId String?
 
   conditions WatchCondition[]
@@ -26,13 +26,13 @@ model Watch {
 }
 
 model WatchCondition {
-  id           String             @id @default(uuid())
-  watchId      String
-  name         String
-  type         WatchConditionType
-  targetUserId String?
-  targetRoleId String?
-  value        String
+  id            String             @id @default(uuid())
+  watchId       String
+  name          String
+  type          WatchConditionType
+  targetUserIds String[]
+  targetRoleIds String[]
+  value         String
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 
