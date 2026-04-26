@@ -22,12 +22,12 @@ export async function handleInteractionCreate(
     await command.execute(interaction);
   } catch (error) {
     logger.error({
-      message: "Error Occurred During Command Execution",
+      message: `Error occurred during command execution`,
       error,
     });
 
     await interaction.reply({
-      content: "Error Occurred During Command Execution",
+      content: `Error occurred during command execution`,
       ephemeral: true,
     });
   }

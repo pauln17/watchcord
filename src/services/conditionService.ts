@@ -1,5 +1,7 @@
-import type { IConditionRepository, IWatchRepository } from "../repositories";
+import type { RedisClientType } from "../lib/redis";
+import type { IRepositories } from "../repositories";
 import type { WatchCondition } from "../types";
+import type { ILogger } from "../util/logger";
 
 export interface IConditionService {
   getUserCondition: (
@@ -7,13 +9,12 @@ export interface IConditionService {
     userId: string,
   ) => Promise<WatchCondition | null>;
   createUserCondition: (
-    userId: string,
-    condition: Omit<WatchCondition, "id">,
+    data: Omit<WatchCondition, "id">,
   ) => Promise<WatchCondition | null>;
   updateUserCondition: (
     id: string,
     userId: string,
-    condition: WatchCondition,
+    data: WatchCondition,
   ) => Promise<WatchCondition | null>;
   deleteUserCondition: (
     id: string,
@@ -23,44 +24,35 @@ export interface IConditionService {
 
 export class ConditionService implements IConditionService {
   constructor(
-    private readonly conditionRepository: IConditionRepository,
-    private readonly watchRepository: IWatchRepository,
+    private readonly repositories: IRepositories,
+    private readonly redis: RedisClientType,
+    private readonly logger: ILogger,
   ) {}
-
-  private isOwnedByUser = async (
-    watchId: string,
-    userId: string,
-  ): Promise<boolean> => {
-    const watch = await this.watchRepository.findById(watchId);
-    return watch != null && watch.userId === userId;
-  };
 
   getUserCondition = async (
     id: string,
     userId: string,
   ): Promise<WatchCondition | null> => {
-    const condition = await this.conditionRepository.findById(id);
-    if (!condition) return null;
-    if (!(await this.isOwnedByUser(condition.watchId, userId))) return null;
-    return condition;
+    return await this.repositories.conditionRepository.findById(id);
   };
 
   createUserCondition = async (
-    userId: string,
-    condition: Omit<WatchCondition, "id">,
+    data: Omit<WatchCondition, "id">,
   ): Promise<WatchCondition | null> => {
-    if (!(await this.isOwnedByUser(condition.watchId, userId))) return null;
-    return await this.conditionRepository.create(condition);
+    return await this.repositories.conditionRepository.create({
+      ...data,
+    });
   };
 
   updateUserCondition = async (
     id: string,
     userId: string,
-    condition: WatchCondition,
+    data: WatchCondition,
   ): Promise<WatchCondition | null> => {
     const existing = await this.getUserCondition(id, userId);
     if (!existing) return null;
-    return await this.conditionRepository.updateById(id, condition);
+
+    return await this.repositories.conditionRepository.updateById(id, data);
   };
 
   deleteUserCondition = async (
@@ -69,6 +61,7 @@ export class ConditionService implements IConditionService {
   ): Promise<WatchCondition | null> => {
     const existing = await this.getUserCondition(id, userId);
     if (!existing) return null;
-    return await this.conditionRepository.deleteById(id);
+
+    return await this.repositories.conditionRepository.deleteById(id);
   };
 }

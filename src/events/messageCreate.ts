@@ -1,7 +1,7 @@
 import { EmbedBuilder, type Message } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
-import type { Watch, WatchCondition } from "../types";
+import type { RedisSearchResult, Watch, WatchCondition } from "../types";
 import type { ILogger } from "../util/logger";
 
 const matchesCondition = (condition: WatchCondition, message: Message) => {
@@ -95,23 +95,17 @@ export async function handleMessageCreate(
   const redis = client.redis;
 
   const { guildId, channelId, content } = message;
-  if (!guildId || !channelId || !content) {
-    return;
-  }
+  if (!guildId || !channelId || !content) return;
 
-  const watchIds = Array.from(
-    new Set([
-      ...(await redis.sMembers(`wc:scopes:guilds:${guildId}`)),
-      ...(await redis.sMembers(`wc:scopes:channels:${channelId}`)),
-    ]),
-  );
-  if (watchIds.length === 0) return;
+  const guildScopedWatches =
+    await client.services.watchService.getGuildScopedWatches(guildId);
+  const channelScopedWatches =
+    await client.services.watchService.getChannelScopedWatches(
+      guildId,
+      channelId,
+    );
 
-  const watches: Watch[] = (
-    await redis.mGet(watchIds.map((id) => `wc:watches:${id}`))
-  )
-    .filter((value): value is string => value !== null)
-    .map((watch) => JSON.parse(watch) as Watch);
+  const watches = [...guildScopedWatches, ...channelScopedWatches];
 
   await Promise.all(
     watches.map(async (watch) => {

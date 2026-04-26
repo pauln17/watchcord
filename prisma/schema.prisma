@@ -13,11 +13,11 @@ datasource db {
 }
 
 model Watch {
-  id        String @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   name      String
   scope     ScopeType
-  guildId   String
+  guildId   String 
   channelId String?
 
   conditions WatchCondition[]

@@ -1,3 +1,3 @@
-import { startup } from "./bootstrap/startup";
+import { initializeApp } from "./bootstrap/app";
 
-await startup();
+await initializeApp();

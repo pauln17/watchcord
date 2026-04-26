@@ -1,16 +1,16 @@
 import { ExtendedClient } from "../discord/ExtendedClient";
 import { prisma } from "../lib/prisma";
-import { redis } from "../lib/redis";
 import {
   ConditionRepository,
   type IRepositories,
   WatchRepository,
 } from "../repositories";
-import { ConditionService,type IServices, WatchService } from "../services";
+import { ConditionService, type IServices, WatchService } from "../services";
 import { logger } from "../util/logger";
+import { initializeRedis } from "./redis";
 
-export const startup = async (): Promise<ExtendedClient> => {
-  await redis.connect();
+export const initializeApp = async (): Promise<ExtendedClient> => {
+  const redis = await initializeRedis();
 
   const repositories: IRepositories = {
     watchRepository: new WatchRepository(prisma),
@@ -18,11 +18,8 @@ export const startup = async (): Promise<ExtendedClient> => {
   };
 
   const services: IServices = {
-    watchService: new WatchService(repositories.watchRepository, redis),
-    conditionService: new ConditionService(
-      repositories.conditionRepository,
-      repositories.watchRepository,
-    ),
+    watchService: new WatchService(repositories, redis, logger),
+    conditionService: new ConditionService(repositories, redis, logger),
   };
 
   return new ExtendedClient(services, redis, logger);
