@@ -19,9 +19,11 @@ const matchesCondition = (condition: WatchCondition, message: Message) => {
 
   switch (type) {
     case "TERM":
+      if (typeof value !== "string") return false;
       return message.content.includes(value);
     case "REGEX":
       try {
+        if (typeof value !== "string") return false;
         return new RegExp(value).test(message.content);
       } catch {
         return false;
@@ -65,7 +67,8 @@ const sendNotification = async (
             (() => {
               const lines: string[] = [
                 `**Name:** ${condition.name}`,
-                `**${titleCase(condition.type)}:** ${condition.value}`,
+                `**Type:** ${condition.type ? titleCase(condition.type) : "N/A"}`,
+                `**Value:** ${condition.value ?? "N/A"}`,
               ];
 
               if (condition.targetUserIds.length > 0) {

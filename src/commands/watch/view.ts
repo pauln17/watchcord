@@ -29,8 +29,8 @@ export const viewWatch = async (
   watch.conditions.forEach((condition) => {
     conditions += [
       `**${condition.name}**`,
-      `Type: ${condition.type}`,
-      `Value: ${condition.value}`,
+      `Type: ${condition.type ?? "N/A"}`,
+      `Value: ${condition.value ?? "N/A"}`,
       condition.targetUserIds.length > 0 &&
         `User(s): ${condition.targetUserIds.map((id) => `<@${id}>`).join(", ")}`,
       condition.targetRoleIds.length > 0 &&

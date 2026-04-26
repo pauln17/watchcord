@@ -26,13 +26,13 @@ model Watch {
 }
 
 model WatchCondition {
-  id            String             @id @default(uuid())
+  id            String              @id @default(uuid())
   watchId       String
   name          String
-  type          WatchConditionType
+  type          WatchConditionType?
   targetUserIds String[]
   targetRoleIds String[]
-  value         String
+  value         String?
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 
