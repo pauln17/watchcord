@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 
 import type { IServices } from "../../services";
+import { titleCase } from "../../util/strings";
 
 export const addWatch = async (
   interaction: ChatInputCommandInteraction,
@@ -34,9 +35,6 @@ export const addWatch = async (
       flags: MessageFlags.Ephemeral,
     });
   }
-
-  const titleCase = (str: string) =>
-    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
 
   const watch = await services.watchService.createUserWatch({
     name,

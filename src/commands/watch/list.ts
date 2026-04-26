@@ -5,14 +5,12 @@ import {
 } from "discord.js";
 
 import type { IServices } from "../../services";
+import { titleCase } from "../../util/strings";
 
 export const listWatch = async (
   interaction: ChatInputCommandInteraction,
   services: IServices,
 ) => {
-  const titleCase = (str: string) =>
-    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
-
   const watches = await services.watchService.getUserWatches(
     interaction.user.id,
     interaction.guildId!,

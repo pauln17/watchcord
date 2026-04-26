@@ -3,6 +3,7 @@ import { EmbedBuilder, type Message } from "discord.js";
 import type { ExtendedClient } from "../discord/ExtendedClient";
 import type { RedisSearchResult, Watch, WatchCondition } from "../types";
 import type { ILogger } from "../util/logger";
+import { titleCase } from "../util/strings";
 
 const matchesCondition = (condition: WatchCondition, message: Message) => {
   const { type, value, targetUserId, targetRoleId } = condition;
@@ -31,9 +32,6 @@ const sendNotification = async (
   matchedConditions: WatchCondition[],
   message: Message,
 ) => {
-  const titleCase = (str: string) =>
-    str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
-
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
     .setTitle(`Watch Triggered: ${watch.name}`)
