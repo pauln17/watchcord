@@ -12,7 +12,6 @@ export const editWatch = async (
   services: IServices,
 ) => {
   const watchId = interaction.options.getString("id", true);
-  const userId = interaction.user.id;
   const name = interaction.options.getString("name");
   const scope = interaction.options.getString("scope");
   const channel = interaction.options.getChannel("channel");
@@ -45,13 +44,17 @@ export const editWatch = async (
     });
   }
 
-  const updated = await services.watchService.updateUserWatch(watchId, userId, {
-    ...(name != null ? { name } : {}),
-    ...(scope != null ? { scope } : {}),
-    ...(channel != null ? { channelId: channel.id } : {}),
-  });
+  const watch = await services.watchService.updateUserWatch(
+    watchId,
+    interaction.user.id,
+    {
+      ...(name != null ? { name } : {}),
+      ...(scope != null ? { scope } : {}),
+      ...(channel != null ? { channelId: channel.id } : {}),
+    },
+  );
 
-  if (!updated) {
+  if (!watch) {
     return await interaction.reply({
       content: "Failed to edit watch",
       flags: MessageFlags.Ephemeral,
@@ -63,12 +66,12 @@ export const editWatch = async (
     .setTitle("Watch Edited")
     .setDescription("Your watch has been edited successfully.")
     .addFields(
-      { name: "Name", value: `${updated.name}` },
-      { name: "ID", value: `\`${updated.id}\`` },
-      { name: "Scope", value: `${titleCase(updated.scope)}` },
+      { name: "Name", value: `${watch.name}` },
+      { name: "ID", value: `\`${watch.id}\`` },
+      { name: "Scope", value: `${titleCase(watch.scope)}` },
       { name: "Server", value: `${interaction.guild?.name}` },
-      ...(updated.scope === "CHANNEL" && updated.channelId
-        ? [{ name: "Channel", value: `<#${updated.channelId}>` }]
+      ...(watch.scope === "CHANNEL" && watch.channelId
+        ? [{ name: "Channel", value: `<#${watch.channelId}>` }]
         : []),
     )
     .setFooter({

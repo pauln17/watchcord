@@ -20,26 +20,26 @@ model Watch {
   guildId   String
   channelId String?
 
-  conditions WatchCondition[]
+  conditions Condition[]
 
   @@map("watch")
 }
 
-model WatchCondition {
+model Condition {
   id            String              @id @default(uuid())
   watchId       String
   name          String
-  type          WatchConditionType?
+  type          ConditionType?
   targetUserIds String[]
   targetRoleIds String[]
   value         String?
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 
-  @@map("watch_conditions")
+  @@map("conditions")
 }
 
-enum WatchConditionType {
+enum ConditionType {
   TERM
   REGEX
 }

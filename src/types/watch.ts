@@ -1,4 +1,4 @@
-import type { WatchCondition } from "./condition";
+import type { Condition } from "./condition";
 
 export const ScopeTypes = ["GUILD", "CHANNEL"] as const;
 export type ScopeType = (typeof ScopeTypes)[number];
@@ -9,6 +9,6 @@ export interface Watch {
   userId: string;
   scope: ScopeType;
   guildId: string;
-  channelId?: string | null;
-  conditions: WatchCondition[];
+  channelId: string | null;
+  conditions: Condition[];
 }

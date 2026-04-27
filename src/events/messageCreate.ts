@@ -1,12 +1,12 @@
 import { EmbedBuilder, type Message } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
-import type { Watch, WatchCondition } from "../types";
+import type { Condition, Watch } from "../types";
 import type { ILogger } from "../util/logger";
 import { titleCase } from "../util/strings";
 
-const matchesCondition = (condition: WatchCondition, message: Message) => {
-  const { type, value, targetUserIds, targetRoleIds } = condition;
+const matchesCondition = (condition: Condition, message: Message) => {
+  const { type, value, targetUserIds = [], targetRoleIds = [] } = condition;
 
   if (targetUserIds.length > 0 && !targetUserIds.includes(message.author.id))
     return false;
@@ -36,7 +36,7 @@ const matchesCondition = (condition: WatchCondition, message: Message) => {
 const sendNotification = async (
   client: ExtendedClient,
   watch: Watch,
-  matchedConditions: WatchCondition[],
+  matchedConditions: Condition[],
   message: Message,
 ) => {
   const notificationEmbed = new EmbedBuilder()

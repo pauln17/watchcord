@@ -1,25 +1,15 @@
 import type { RedisClientType } from "../lib/redis";
 import type { IRepositories } from "../repositories";
-import type { WatchCondition } from "../types";
+import type { Condition } from "../types";
 import type { ILogger } from "../util/logger";
 
 export interface IConditionService {
-  getUserCondition: (
-    id: string,
-    userId: string,
-  ) => Promise<WatchCondition | null>;
-  createUserCondition: (
-    data: Omit<WatchCondition, "id">,
-  ) => Promise<WatchCondition | null>;
-  updateUserCondition: (
-    id: string,
-    userId: string,
-    data: WatchCondition,
-  ) => Promise<WatchCondition | null>;
+  getUserCondition: (id: string, userId: string) => Promise<Condition | null>;
+  createUserCondition: (data: Omit<Condition, "id">) => Promise<Condition>;
   deleteUserCondition: (
     id: string,
     userId: string,
-  ) => Promise<WatchCondition | null>;
+  ) => Promise<Condition | null>;
 }
 
 export class ConditionService implements IConditionService {
@@ -32,34 +22,27 @@ export class ConditionService implements IConditionService {
   getUserCondition = async (
     id: string,
     userId: string,
-  ): Promise<WatchCondition | null> => {
-    return await this.repositories.conditionRepository.findById(id);
+  ): Promise<Condition | null> => {
+    return await this.repositories.conditionRepository.findByIdAndUserId(
+      id,
+      userId,
+    );
   };
 
   createUserCondition = async (
-    data: Omit<WatchCondition, "id">,
-  ): Promise<WatchCondition | null> => {
+    data: Omit<Condition, "id">,
+  ): Promise<Condition> => {
     return await this.repositories.conditionRepository.create({
       ...data,
     });
   };
 
-  updateUserCondition = async (
-    id: string,
-    userId: string,
-    data: WatchCondition,
-  ): Promise<WatchCondition | null> => {
-    const existing = await this.getUserCondition(id, userId);
-    if (!existing) return null;
-
-    return await this.repositories.conditionRepository.updateById(id, data);
-  };
-
   deleteUserCondition = async (
     id: string,
     userId: string,
-  ): Promise<WatchCondition | null> => {
-    const existing = await this.getUserCondition(id, userId);
+  ): Promise<Condition | null> => {
+    const existing =
+      await this.repositories.conditionRepository.findByIdAndUserId(id, userId);
     if (!existing) return null;
 
     return await this.repositories.conditionRepository.deleteById(id);

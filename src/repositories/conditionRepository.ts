@@ -1,53 +1,33 @@
 import type { PrismaClient } from "../../generated/prisma/client";
-import type { WatchCondition, WatchConditionType } from "../types";
+import type { Condition } from "../types";
 
 export interface IConditionRepository {
-  findById: (id: string) => Promise<WatchCondition | null>;
-  create: (data: Omit<WatchCondition, "id">) => Promise<WatchCondition>;
-  updateById: (id: string, data: WatchCondition) => Promise<WatchCondition>;
-  deleteById: (id: string) => Promise<WatchCondition>;
+  findByIdAndUserId: (id: string, userId: string) => Promise<Condition | null>;
+  create: (data: Omit<Condition, "id">) => Promise<Condition>;
+  deleteById: (id: string) => Promise<Condition>;
 }
 
 export class ConditionRepository implements IConditionRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  findById = async (id: string): Promise<WatchCondition | null> => {
-    return await this.prisma.watchCondition.findUnique({ where: { id } });
-  };
-
-  create = async (
-    data: Omit<WatchCondition, "id">,
-  ): Promise<WatchCondition> => {
-    return await this.prisma.watchCondition.create({
-      data: {
-        watchId: data.watchId,
-        name: data.name,
-        type: data.type as WatchConditionType,
-        targetUserId: data.targetUserId ?? null,
-        targetRoleId: data.targetRoleId ?? null,
-        value: data.value,
-      },
-    });
-  };
-
-  updateById = async (
+  findByIdAndUserId = async (
     id: string,
-    data: WatchCondition,
-  ): Promise<WatchCondition> => {
-    return await this.prisma.watchCondition.update({
-      where: { id },
-      data: {
-        name: data.name,
-        type: data.type,
-        targetUserId: data.targetUserId ?? null,
-        targetRoleId: data.targetRoleId ?? null,
-        value: data.value,
-        watchId: data.watchId,
-      },
+    userId: string,
+  ): Promise<Condition | null> => {
+    return await this.prisma.condition.findFirst({
+      where: { id, watch: { userId } },
     });
   };
 
-  deleteById = async (id: string): Promise<WatchCondition> => {
-    return await this.prisma.watchCondition.delete({ where: { id } });
+  create = async (data: Omit<Condition, "id">): Promise<Condition> => {
+    return await this.prisma.condition.create({
+      data,
+    });
+  };
+
+  deleteById = async (id: string): Promise<Condition> => {
+    return await this.prisma.condition.delete({
+      where: { id },
+    });
   };
 }

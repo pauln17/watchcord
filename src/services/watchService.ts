@@ -55,13 +55,15 @@ export class WatchService implements IWatchService {
         guildId,
       );
 
-    await this.redis.json.mSet(
-      watches.map((watch) => ({
-        key: `wc:watches:${watch.id}`,
-        path: "$",
-        value: watch as unknown as RedisJSON,
-      })),
-    );
+    if (watches.length > 0) {
+      await this.redis.json.mSet(
+        watches.map((watch) => ({
+          key: `wc:watches:${watch.id}`,
+          path: "$",
+          value: watch as unknown as RedisJSON,
+        })),
+      );
+    }
 
     return watches;
   };
@@ -91,13 +93,15 @@ export class WatchService implements IWatchService {
         channelId,
       );
 
-    await this.redis.json.mSet(
-      watches.map((watch) => ({
-        key: `wc:watches:${watch.id}`,
-        path: "$",
-        value: watch as unknown as RedisJSON,
-      })),
-    );
+    if (watches.length > 0) {
+      await this.redis.json.mSet(
+        watches.map((watch) => ({
+          key: `wc:watches:${watch.id}`,
+          path: "$",
+          value: watch as unknown as RedisJSON,
+        })),
+      );
+    }
 
     return watches;
   };
@@ -165,13 +169,15 @@ export class WatchService implements IWatchService {
         guildId,
       );
 
-    await this.redis.json.mSet(
-      watches.map((watch) => ({
-        key: `wc:watches:${watch.id}`,
-        path: "$",
-        value: watch as unknown as RedisJSON,
-      })),
-    );
+    if (watches.length > 0) {
+      await this.redis.json.mSet(
+        watches.map((watch) => ({
+          key: `wc:watches:${watch.id}`,
+          path: "$",
+          value: watch as unknown as RedisJSON,
+        })),
+      );
+    }
 
     return watches;
   };

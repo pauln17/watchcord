@@ -1,12 +1,12 @@
-export const WatchConditionTypes = ["TERM", "REGEX"] as const;
-export type WatchConditionType = (typeof WatchConditionTypes)[number];
+export const ConditionTypes = ["TERM", "REGEX"] as const;
+export type ConditionType = (typeof ConditionTypes)[number];
 
-export interface WatchCondition {
+export interface Condition {
   id: string;
   watchId: string;
   name: string;
-  type: WatchConditionType;
+  type: ConditionType | null;
   targetUserIds: string[];
   targetRoleIds: string[];
-  value: string;
+  value: string | null;
 }

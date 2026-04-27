@@ -28,14 +28,13 @@ export const viewWatch = async (
   let conditions = "";
   watch.conditions.forEach((condition) => {
     conditions += [
-      `**${condition.name}**`,
+      `Name: ${condition.name}`,
       `Type: ${condition.type ?? "N/A"}`,
       `Value: ${condition.value ?? "N/A"}`,
       condition.targetUserIds.length > 0 &&
-        `User(s): ${condition.targetUserIds.map((id) => `<@${id}>`).join(", ")}`,
+        `User(s): ${condition.targetUserIds.map((id: string) => `<@${id}>`).join(", ")}`,
       condition.targetRoleIds.length > 0 &&
-        `Role(s): ${condition.targetRoleIds.map((id) => `<@&${id}>`).join(", ")}`,
-      `View: \`/condition view id: ${condition.id}\``,
+        `Role(s): ${condition.targetRoleIds.map((id: string) => `<@&${id}>`).join(", ")}`,
       "\n",
     ]
       .filter(Boolean)
@@ -53,7 +52,10 @@ export const viewWatch = async (
       ...(watch.scope === "CHANNEL" && watch.channelId
         ? [{ name: "Channel", value: `<#${watch.channelId}>` }]
         : []),
-      { name: "Conditions", value: conditions ? conditions : "Empty" },
+      {
+        name: `Conditions (${watch.conditions.length})`,
+        value: conditions ? conditions : "Empty",
+      },
     )
     .setFooter({
       text: "Watchcord",
