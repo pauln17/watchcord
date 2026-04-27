@@ -107,13 +107,10 @@ export async function handleMessageCreate(
   const { guildId, channelId, content } = message;
   if (!guildId || !channelId || !content) return;
 
-  const guildScopedWatches =
-    await client.services.watchService.getGuildScopedWatches(guildId);
-  const channelScopedWatches =
-    await client.services.watchService.getChannelScopedWatches(
-      guildId,
-      channelId,
-    );
+  const [guildScopedWatches, channelScopedWatches] = await Promise.all([
+    client.services.watchService.getGuildScopedWatches(guildId),
+    client.services.watchService.getChannelScopedWatches(guildId, channelId),
+  ]);
 
   const watches = [...guildScopedWatches, ...channelScopedWatches];
 
