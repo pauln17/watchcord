@@ -119,6 +119,8 @@ export async function handleMessageCreate(
 
   await Promise.all(
     watches.map(async (watch) => {
+      if (watch.userId === message.author.id) return;
+
       const matchedConditions = watch.conditions.filter((condition) =>
         matchesCondition(condition, message),
       );
