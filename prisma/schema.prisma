@@ -22,11 +22,14 @@ model Watch {
 
   conditions Condition[]
 
+  @@index([userId, guildId])
+  @@index([guildId, scope])
+  @@index([guildId, channelId, scope])
   @@map("watch")
 }
 
 model Condition {
-  id            String              @id @default(uuid())
+  id            String         @id @default(uuid())
   watchId       String
   name          String
   type          ConditionType?
@@ -36,6 +39,7 @@ model Condition {
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 
+  @@index([watchId])
   @@map("conditions")
 }
 
