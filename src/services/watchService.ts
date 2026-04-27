@@ -1,9 +1,6 @@
-import type { RedisJSON } from "redis";
-
-import type { RedisClientType } from "../lib/redis";
+import type { IWatchCache } from "../cache/watchCache";
 import type { IRepositories } from "../repositories";
-import type { RedisSearchResult, Watch } from "../types";
-import type { ILogger } from "../util/logger";
+import type { Watch } from "../types";
 
 export interface IWatchService {
   getWatches: () => Promise<Watch[]>;
@@ -26,8 +23,7 @@ export interface IWatchService {
 export class WatchService implements IWatchService {
   constructor(
     private readonly repositories: IRepositories,
-    private readonly redis: RedisClientType,
-    private readonly logger: ILogger,
+    private readonly cache: IWatchCache,
   ) {}
 
   getWatches = async (): Promise<Watch[]> => {
@@ -35,35 +31,15 @@ export class WatchService implements IWatchService {
   };
 
   getGuildScopedWatches = async (guildId: string): Promise<Watch[]> => {
-    const result = (await this.redis.ft.search(
-      "idx:watches",
-      `@scope:{"GUILD"} @guildId:{"${guildId}"}`,
-    )) as unknown as RedisSearchResult<Watch>;
-
-    if (result.total > 0 && result.documents.length > 0) {
-      const watches = result.documents
-        .map((doc) => doc.value)
-        .filter((value): value is Watch => value != null);
-
-      if (watches.length > 0) {
-        return watches;
-      }
-    }
+    const cached = await this.cache.getGuildScopedWatches(guildId);
+    if (cached !== null) return cached;
 
     const watches =
       await this.repositories.watchRepository.findManyGuildScopedByGuildId(
         guildId,
       );
 
-    if (watches.length > 0) {
-      await this.redis.json.mSet(
-        watches.map((watch) => ({
-          key: `wc:watches:${watch.id}`,
-          path: "$",
-          value: watch as unknown as RedisJSON,
-        })),
-      );
-    }
+    await this.cache.setGuildScopedWatches(guildId, watches);
 
     return watches;
   };
@@ -72,20 +48,8 @@ export class WatchService implements IWatchService {
     guildId: string,
     channelId: string,
   ): Promise<Watch[]> => {
-    const result = (await this.redis.ft.search(
-      "idx:watches",
-      `@scope:{"CHANNEL"} @guildId:{"${guildId}"} @channelId:{"${channelId}"}`,
-    )) as unknown as RedisSearchResult<Watch>;
-
-    if (result.total > 0 && result.documents.length > 0) {
-      const watches = result.documents
-        .map((doc) => doc.value)
-        .filter((value): value is Watch => value != null);
-
-      if (watches.length > 0) {
-        return watches;
-      }
-    }
+    const cached = await this.cache.getChannelScopedWatches(channelId);
+    if (cached !== null) return cached;
 
     const watches =
       await this.repositories.watchRepository.findManyChannelScopedByGuildIdAndChannelId(
@@ -93,48 +57,22 @@ export class WatchService implements IWatchService {
         channelId,
       );
 
-    if (watches.length > 0) {
-      await this.redis.json.mSet(
-        watches.map((watch) => ({
-          key: `wc:watches:${watch.id}`,
-          path: "$",
-          value: watch as unknown as RedisJSON,
-        })),
-      );
-    }
+    await this.cache.setChannelScopedWatches(channelId, watches);
 
     return watches;
   };
 
   getUserWatch = async (id: string, userId: string): Promise<Watch | null> => {
-    const result = (await this.redis.ft.search(
-      "idx:watches",
-      `@id:{"${id}"} @userId:{"${userId}"}`,
-      {
-        LIMIT: {
-          from: 0,
-          size: 1,
-        },
-      },
-    )) as unknown as RedisSearchResult<Watch>;
-
-    if (result.total > 0 && result.documents[0]?.value != null) {
-      return result.documents[0].value;
-    }
+    const cached = await this.cache.getUserWatch(id, userId);
+    if (cached !== null) return cached;
 
     const watch = await this.repositories.watchRepository.findByIdAndUserId(
       id,
       userId,
     );
-
     if (!watch) return null;
 
-    await this.redis.json.set(
-      `wc:watches:${id}`,
-      "$",
-      watch as unknown as RedisJSON,
-    );
-
+    await this.cache.setUserWatch(id, userId, watch);
     return watch;
   };
 
@@ -142,26 +80,8 @@ export class WatchService implements IWatchService {
     userId: string,
     guildId: string,
   ): Promise<Watch[]> => {
-    const result = (await this.redis.ft.search(
-      "idx:watches",
-      `@userId:{"${userId}"} @guildId:{"${guildId}"}`,
-      {
-        LIMIT: {
-          from: 0,
-          size: 100,
-        },
-      },
-    )) as unknown as RedisSearchResult<Watch>;
-
-    if (result.total > 0 && result.documents.length > 0) {
-      const watches = result.documents
-        .map((doc) => doc.value)
-        .filter((value): value is Watch => value != null);
-
-      if (watches.length > 0) {
-        return watches;
-      }
-    }
+    const cached = await this.cache.getUserWatches(userId, guildId);
+    if (cached !== null) return cached;
 
     const watches =
       await this.repositories.watchRepository.findManyByUserIdAndGuildId(
@@ -169,15 +89,7 @@ export class WatchService implements IWatchService {
         guildId,
       );
 
-    if (watches.length > 0) {
-      await this.redis.json.mSet(
-        watches.map((watch) => ({
-          key: `wc:watches:${watch.id}`,
-          path: "$",
-          value: watch as unknown as RedisJSON,
-        })),
-      );
-    }
+    await this.cache.setUserWatches(userId, guildId, watches);
 
     return watches;
   };
@@ -198,18 +110,12 @@ export class WatchService implements IWatchService {
       channelId: data.scope === "GUILD" ? null : data.channelId!,
     });
 
-    try {
-      await this.redis.json.set(
-        `wc:watches:${watch.id}`,
-        "$",
-        watch as unknown as RedisJSON,
-      );
-    } catch (error) {
-      this.logger.error({
-        message: "Failed to create watch in Redis cache",
-        error,
-      });
-    }
+    await this.cache.invalidate(
+      watch.guildId,
+      watch.channelId,
+      watch.userId,
+      watch.id,
+    );
 
     return watch;
   };
@@ -243,17 +149,20 @@ export class WatchService implements IWatchService {
           : {}),
     });
 
-    try {
-      await this.redis.json.set(
-        `wc:watches:${id}`,
-        "$",
-        watch as unknown as RedisJSON,
+    await this.cache.invalidate(
+      existing.guildId,
+      existing.channelId,
+      existing.userId,
+      existing.id,
+    );
+
+    if (watch.channelId !== existing.channelId) {
+      await this.cache.invalidate(
+        watch.guildId,
+        watch.channelId,
+        watch.userId,
+        watch.id,
       );
-    } catch (error) {
-      this.logger.error({
-        message: "Failed to update watch in Redis cache",
-        error,
-      });
     }
 
     return watch;
@@ -271,14 +180,12 @@ export class WatchService implements IWatchService {
 
     const watch = await this.repositories.watchRepository.deleteById(id);
 
-    try {
-      await this.redis.json.del(`wc:watches:${id}`);
-    } catch (error) {
-      this.logger.error({
-        message: "Failed to delete watch from Redis cache",
-        error,
-      });
-    }
+    await this.cache.invalidate(
+      watch.guildId,
+      watch.channelId,
+      watch.userId,
+      watch.id,
+    );
 
     return watch;
   };

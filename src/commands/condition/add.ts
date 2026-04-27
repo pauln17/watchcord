@@ -29,18 +29,23 @@ export const addCondition = async (
     });
   }
 
-  const condition = await services.conditionService.createUserCondition({
-    name,
-    watchId,
-    type,
-    value,
-    targetUserIds: targetUserIds
-      ? targetUserIds.split(",").map((id: string) => id.trim())
-      : [],
-    targetRoleIds: targetRoleIds
-      ? targetRoleIds.split(",").map((id: string) => id.trim())
-      : [],
-  });
+  const condition = await services.conditionService.createUserCondition(
+    {
+      name,
+      watchId,
+      type,
+      value,
+      targetUserIds: targetUserIds
+        ? targetUserIds.split(",").map((id: string) => id.trim())
+        : [],
+      targetRoleIds: targetRoleIds
+        ? targetRoleIds.split(",").map((id: string) => id.trim())
+        : [],
+    },
+    watch.guildId,
+    watch.channelId,
+    watch.userId,
+  );
 
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")

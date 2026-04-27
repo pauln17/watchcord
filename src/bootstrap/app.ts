@@ -1,3 +1,4 @@
+import { WatchCache } from "../cache/watchCache";
 import { ExtendedClient } from "../discord/ExtendedClient";
 import { prisma } from "../lib/prisma";
 import {
@@ -17,10 +18,12 @@ export const initializeApp = async (): Promise<ExtendedClient> => {
     conditionRepository: new ConditionRepository(prisma),
   };
 
+  const cache = new WatchCache(redis, logger);
+
   const services: IServices = {
-    watchService: new WatchService(repositories, redis, logger),
-    conditionService: new ConditionService(repositories, redis, logger),
+    watchService: new WatchService(repositories, cache),
+    conditionService: new ConditionService(repositories, cache),
   };
 
-  return new ExtendedClient(services, redis, logger);
+  return new ExtendedClient(services, logger);
 };

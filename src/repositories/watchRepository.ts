@@ -3,16 +3,17 @@ import type { Watch } from "../types";
 
 export interface IWatchRepository {
   findAll: () => Promise<Watch[]>;
-  findManyGuildScopedByGuildId: (guildId: string) => Promise<Watch[]>;
-  findManyChannelScopedByGuildIdAndChannelId: (
-    guildId: string,
-    channelId: string,
-  ) => Promise<Watch[]>;
+  findById: (id: string) => Promise<Watch | null>;
   findByIdAndUserId: (id: string, userId: string) => Promise<Watch | null>;
   findManyByUserIdAndGuildId: (
     userId: string,
     guildId: string,
   ) => Promise<Watch[]>;
+  findManyChannelScopedByGuildIdAndChannelId: (
+    guildId: string,
+    channelId: string,
+  ) => Promise<Watch[]>;
+  findManyGuildScopedByGuildId: (guildId: string) => Promise<Watch[]>;
   create: (data: Omit<Watch, "id" | "conditions">) => Promise<Watch>;
   updateById: (
     id: string,
@@ -30,19 +31,9 @@ export class WatchRepository implements IWatchRepository {
     });
   };
 
-  findManyGuildScopedByGuildId = async (guildId: string): Promise<Watch[]> => {
-    return await this.prisma.watch.findMany({
-      where: { scope: "GUILD", guildId },
-      include: { conditions: true },
-    });
-  };
-
-  findManyChannelScopedByGuildIdAndChannelId = async (
-    guildId: string,
-    channelId: string,
-  ): Promise<Watch[]> => {
-    return await this.prisma.watch.findMany({
-      where: { scope: "CHANNEL", guildId, channelId },
+  findById = async (id: string): Promise<Watch | null> => {
+    return await this.prisma.watch.findUnique({
+      where: { id },
       include: { conditions: true },
     });
   };
@@ -63,6 +54,23 @@ export class WatchRepository implements IWatchRepository {
   ): Promise<Watch[]> => {
     return await this.prisma.watch.findMany({
       where: { userId, guildId },
+      include: { conditions: true },
+    });
+  };
+
+  findManyChannelScopedByGuildIdAndChannelId = async (
+    guildId: string,
+    channelId: string,
+  ): Promise<Watch[]> => {
+    return await this.prisma.watch.findMany({
+      where: { scope: "CHANNEL", guildId, channelId },
+      include: { conditions: true },
+    });
+  };
+
+  findManyGuildScopedByGuildId = async (guildId: string): Promise<Watch[]> => {
+    return await this.prisma.watch.findMany({
+      where: { scope: "GUILD", guildId },
       include: { conditions: true },
     });
   };

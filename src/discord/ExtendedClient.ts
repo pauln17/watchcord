@@ -5,7 +5,6 @@ import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { commands } from "../commands";
 import { handleInteractionCreate } from "../events/interactionCreate";
 import { handleMessageCreate } from "../events/messageCreate";
-import type { RedisClientType } from "../lib/redis";
 import type { IServices } from "../services";
 import type { Command } from "../types";
 import type { ILogger } from "../util/logger";
@@ -13,10 +12,9 @@ import type { ILogger } from "../util/logger";
 export class ExtendedClient extends Client {
   commands: Collection<string, Command> = new Collection();
   services: IServices;
-  redis: RedisClientType;
   logger: ILogger;
 
-  constructor(services: IServices, redis: RedisClientType, logger: ILogger) {
+  constructor(services: IServices, logger: ILogger) {
     super({
       intents: [
         GatewayIntentBits.Guilds,
@@ -26,7 +24,6 @@ export class ExtendedClient extends Client {
     });
 
     this.services = services;
-    this.redis = redis;
     this.logger = logger;
     this.init();
   }

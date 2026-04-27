@@ -1,14 +1,15 @@
-import type { RedisJSON } from "redis";
-
-import type { RedisClientType } from "../lib/redis";
+import type { IWatchCache } from "../cache/watchCache";
 import type { IRepositories } from "../repositories";
 import type { Condition } from "../types";
-import type { RedisSearchResult, Watch } from "../types";
-import type { ILogger } from "../util/logger";
 
 export interface IConditionService {
   getUserCondition: (id: string, userId: string) => Promise<Condition | null>;
-  createUserCondition: (data: Omit<Condition, "id">) => Promise<Condition>;
+  createUserCondition: (
+    data: Omit<Condition, "id">,
+    guildId: string,
+    channelId: string | null,
+    userId: string,
+  ) => Promise<Condition>;
   deleteUserCondition: (
     id: string,
     userId: string,
@@ -18,8 +19,7 @@ export interface IConditionService {
 export class ConditionService implements IConditionService {
   constructor(
     private readonly repositories: IRepositories,
-    private readonly redis: RedisClientType,
-    private readonly logger: ILogger,
+    private readonly cache: IWatchCache,
   ) {}
 
   getUserCondition = async (
@@ -34,30 +34,18 @@ export class ConditionService implements IConditionService {
 
   createUserCondition = async (
     data: Omit<Condition, "id">,
+    guildId: string,
+    channelId: string | null,
+    userId: string,
   ): Promise<Condition> => {
-    const condition = await this.repositories.conditionRepository.create({
-      ...data,
-    });
+    const condition = await this.repositories.conditionRepository.create(data);
 
-    const result = (await this.redis.ft.search(
-      "idx:watches",
-      `@id:{"${condition.watchId}"}`,
-      {
-        LIMIT: {
-          from: 0,
-          size: 1,
-        },
-      },
-    )) as unknown as RedisSearchResult<Watch>;
-
-    if (result.total > 0 && result.documents[0]?.value != null) {
-      result.documents[0].value.conditions.push(condition);
-      await this.redis.json.set(
-        `wc:watches:${condition.watchId}`,
-        "$",
-        result.documents[0].value as unknown as RedisJSON,
-      );
-    }
+    await this.cache.invalidate(
+      guildId,
+      channelId,
+      userId,
+      data.watchId,
+    );
 
     return condition;
   };
@@ -73,26 +61,16 @@ export class ConditionService implements IConditionService {
     const condition =
       await this.repositories.conditionRepository.deleteById(id);
 
-    const result = (await this.redis.ft.search(
-      "idx:watches",
-      `@id:{"${existing.watchId}"}`,
-      {
-        LIMIT: {
-          from: 0,
-          size: 1,
-        },
-      },
-    )) as unknown as RedisSearchResult<Watch>;
+    const watch = await this.repositories.watchRepository.findById(
+      existing.watchId,
+    );
 
-    if (result.total > 0 && result.documents[0]?.value != null) {
-      result.documents[0].value.conditions =
-        result.documents[0].value.conditions.filter(
-          (condition) => condition.id !== id,
-        );
-      await this.redis.json.set(
-        `wc:watches:${result.documents[0].value.id}`,
-        "$",
-        result.documents[0].value as unknown as RedisJSON,
+    if (watch) {
+      await this.cache.invalidate(
+        watch.guildId,
+        watch.channelId,
+        watch.userId,
+        existing.watchId,
       );
     }
 
