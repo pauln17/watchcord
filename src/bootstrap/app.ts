@@ -10,7 +10,7 @@ import { ConditionService, type IServices, WatchService } from "../services";
 import { logger } from "../util/logger";
 import { initializeRedis } from "./redis";
 
-export const initializeApp = async (): Promise<ExtendedClient> => {
+export const initializeApp = async (): Promise<void> => {
   const redis = await initializeRedis();
 
   const repositories: IRepositories = {
@@ -25,5 +25,9 @@ export const initializeApp = async (): Promise<ExtendedClient> => {
     conditionService: new ConditionService(repositories, cache),
   };
 
-  return new ExtendedClient(services, logger);
+  new ExtendedClient(services, logger);
+
+  logger.info({
+    message: "Application successfully started",
+  });
 };
