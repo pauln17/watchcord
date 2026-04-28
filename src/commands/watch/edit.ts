@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 
 import type { IServices } from "../../services";
+import type { ScopeType } from "../../types";
 import { titleCase } from "../../util/strings";
 
 export const editWatch = async (
@@ -13,36 +14,8 @@ export const editWatch = async (
 ) => {
   const watchId = interaction.options.getString("id", true);
   const name = interaction.options.getString("name");
-  const scope = interaction.options.getString("scope");
+  const scope = interaction.options.getString("scope") as ScopeType;
   const channel = interaction.options.getChannel("channel");
-
-  if (!name && !scope && !channel) {
-    return await interaction.reply({
-      content: "At least one option is required",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  if (scope != null && scope !== "GUILD" && scope !== "CHANNEL") {
-    return await interaction.reply({
-      content: "Invalid scope",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  if (scope === "CHANNEL" && !channel) {
-    return await interaction.reply({
-      content: "Channel is required when scope is set to channel",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  if (scope === "GUILD" && channel) {
-    return await interaction.reply({
-      content: "Guild scope cannot be used with a channel",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
 
   const watch = await services.watchService.updateUserWatch(
     watchId,
@@ -56,7 +29,7 @@ export const editWatch = async (
 
   if (!watch) {
     return await interaction.reply({
-      content: "Failed to edit watch",
+      content: "Watch not found",
       flags: MessageFlags.Ephemeral,
     });
   }

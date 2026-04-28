@@ -1,6 +1,7 @@
 import type { Interaction } from "discord.js";
 
 import type { ExtendedClient } from "../discord/ExtendedClient";
+import { ValidationError } from "../errors/ValidationError";
 import type { ILogger } from "../util/logger";
 
 export async function handleInteractionCreate(
@@ -8,27 +9,33 @@ export async function handleInteractionCreate(
   interaction: Interaction,
   logger: ILogger,
 ) {
-  if (!interaction.isChatInputCommand()) {
-    return;
-  }
+  if (!interaction.isChatInputCommand()) return;
 
   const { commandName } = interaction;
+
   const command = client.commands.get(commandName);
-  if (!command) {
-    return;
-  }
+  if (!command) return;
 
   try {
     await command.execute(interaction);
   } catch (error) {
+    if (error instanceof ValidationError) {
+      await interaction.reply({
+        content: error.message,
+      });
+      return;
+    }
+
     logger.error({
-      message: `Error occurred during command execution`,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred on interaction create event handler",
       error,
     });
 
     await interaction.reply({
-      content: `Error occurred during command execution`,
-      ephemeral: true,
+      content: "Something went wrong while executing this command",
     });
   }
 }

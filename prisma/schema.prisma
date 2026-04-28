@@ -32,7 +32,7 @@ model Condition {
   id            String         @id @default(uuid())
   watchId       String
   name          String
-  type          ConditionType?
+  type          ConditionType
   targetUserIds String[]
   targetRoleIds String[]
   value         String?
@@ -44,6 +44,7 @@ model Condition {
 }
 
 enum ConditionType {
+  NONE
   TERM
   REGEX
 }

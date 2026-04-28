@@ -115,7 +115,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
   if (!interaction.guild || !interaction.guildId) {
     return await interaction.reply({
-      content: "Guild not found",
+      content: "These commands can only be used in a server",
       flags: MessageFlags.Ephemeral,
     });
   }

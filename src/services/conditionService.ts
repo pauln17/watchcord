@@ -1,4 +1,5 @@
 import type { IWatchCache } from "../cache/watchCache";
+import { ValidationError } from "../errors/ValidationError";
 import type { IRepositories } from "../repositories";
 import type { Condition } from "../types";
 
@@ -38,14 +39,15 @@ export class ConditionService implements IConditionService {
     channelId: string | null,
     userId: string,
   ): Promise<Condition> => {
+    if (data.type === "NONE" && data.value)
+      throw new ValidationError("Value cannot be provided when type is NONE");
+
+    if (data.type !== "NONE" && !data.value)
+      throw new ValidationError("Value is required when type is not NONE");
+
     const condition = await this.repositories.conditionRepository.create(data);
 
-    await this.cache.invalidate(
-      guildId,
-      channelId,
-      userId,
-      data.watchId,
-    );
+    await this.cache.invalidate(guildId, channelId, userId, data.watchId);
 
     return condition;
   };

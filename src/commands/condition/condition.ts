@@ -35,10 +35,11 @@ export const data = new SlashCommandBuilder()
           .setName("type")
           .setDescription("The type of the condition")
           .addChoices(
+            { name: "None", value: "NONE" },
             { name: "Term", value: "TERM" },
             { name: "Regex", value: "REGEX" },
           )
-          .setRequired(false),
+          .setRequired(true),
       )
       .addStringOption((option) =>
         option

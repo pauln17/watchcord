@@ -68,7 +68,9 @@ export class WatchCache implements IWatchCache {
     }
   };
 
-  getChannelScopedWatches = async (channelId: string): Promise<Watch[] | null> => {
+  getChannelScopedWatches = async (
+    channelId: string,
+  ): Promise<Watch[] | null> => {
     try {
       const raw = await this.redis.get(this.channelKey(channelId));
       if (raw === null) return null;

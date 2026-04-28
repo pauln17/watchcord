@@ -17,6 +17,7 @@ export const removeWatch = async (
     watchId,
     interaction.user.id,
   );
+
   if (!watch) {
     return await interaction.reply({
       content: "Watch not found",

@@ -107,31 +107,38 @@ export async function handleMessageCreate(
   const { guildId, channelId, content } = message;
   if (!guildId || !channelId || !content) return;
 
-  const [guildScopedWatches, channelScopedWatches] = await Promise.all([
-    client.services.watchService.getGuildScopedWatches(guildId),
-    client.services.watchService.getChannelScopedWatches(guildId, channelId),
-  ]);
+  try {
+    const [guildScopedWatches, channelScopedWatches] = await Promise.all([
+      client.services.watchService.getGuildScopedWatches(guildId),
+      client.services.watchService.getChannelScopedWatches(guildId, channelId),
+    ]);
 
-  const watches = [...guildScopedWatches, ...channelScopedWatches];
+    const watches = [...guildScopedWatches, ...channelScopedWatches];
 
-  await Promise.all(
-    watches.map(async (watch) => {
-      if (watch.userId === message.author.id) return;
+    await Promise.all(
+      watches.map(async (watch) => {
+        if (watch.userId === message.author.id) return;
 
-      const matchedConditions = watch.conditions.filter((condition) =>
-        matchesCondition(condition, message),
-      );
+        const matchedConditions = watch.conditions.filter((condition) =>
+          matchesCondition(condition, message),
+        );
 
-      if (matchedConditions.length > 0) {
-        try {
-          await sendNotification(client, watch, matchedConditions, message);
-        } catch (error) {
-          logger.error({
-            message: "Failed to send watch notification",
-            error,
-          });
+        if (matchedConditions.length > 0) {
+          try {
+            await sendNotification(client, watch, matchedConditions, message);
+          } catch (error) {
+            logger.error({
+              message: `Failed to send notification on watch: ${watch.id} to user: ${watch.userId}`,
+              error,
+            });
+          }
         }
-      }
-    }),
-  );
+      }),
+    );
+  } catch (error) {
+    logger.error({
+      message: "An error occurred on message create event handler",
+      error,
+    });
+  }
 }

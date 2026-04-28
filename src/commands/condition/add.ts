@@ -13,7 +13,7 @@ export const addCondition = async (
 ) => {
   const watchId = interaction.options.getString("watch-id", true);
   const name = interaction.options.getString("name", true);
-  const type = (interaction.options.getString("type") as ConditionType) ?? null;
+  const type = interaction.options.getString("type", true) as ConditionType;
   const value = interaction.options.getString("value");
   const targetUserIds = interaction.options.getString("target-user-ids");
   const targetRoleIds = interaction.options.getString("target-role-ids");
@@ -22,6 +22,7 @@ export const addCondition = async (
     watchId,
     interaction.user.id,
   );
+
   if (!watch) {
     return await interaction.reply({
       content: "Watch not found",

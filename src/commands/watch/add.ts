@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 
 import type { IServices } from "../../services";
+import type { ScopeType } from "../../types";
 import { titleCase } from "../../util/strings";
 
 export const addWatch = async (
@@ -12,29 +13,8 @@ export const addWatch = async (
   services: IServices,
 ) => {
   const name = interaction.options.getString("name", true);
-  const scope = interaction.options.getString("scope", true);
+  const scope = interaction.options.getString("scope", true) as ScopeType;
   const channel = interaction.options.getChannel("channel");
-
-  if (scope !== "GUILD" && scope !== "CHANNEL") {
-    return await interaction.reply({
-      content: "Invalid scope",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  if (scope === "CHANNEL" && !channel) {
-    return await interaction.reply({
-      content: "Channel is required when scope is set to channel",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
-  if (scope === "GUILD" && channel) {
-    return await interaction.reply({
-      content: "Guild scope cannot be used with a channel",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
 
   const watch = await services.watchService.createUserWatch({
     name,
