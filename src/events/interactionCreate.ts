@@ -17,10 +17,11 @@ export async function handleInteractionCreate(
   if (!command) return;
 
   try {
+    await interaction.deferReply({ ephemeral: true });
     await command.execute(interaction);
   } catch (error) {
     if (error instanceof ValidationError) {
-      await interaction.reply({
+      await interaction.editReply({
         content: error.message,
       });
       return;
@@ -34,8 +35,14 @@ export async function handleInteractionCreate(
       error,
     });
 
-    await interaction.reply({
-      content: "Something went wrong while executing this command",
-    });
+    if (interaction.deferred) {
+      await interaction.editReply({
+        content: "Something went wrong while executing this command",
+      });
+    } else {
+      await interaction.reply({
+        content: "Something went wrong while executing this command",
+      });
+    }
   }
 }

@@ -1,8 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  MessageFlags,
-} from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 
 import type { IServices } from "../../services";
 import { titleCase } from "../../util/strings";
@@ -17,9 +13,8 @@ export const listWatch = async (
   );
 
   if (!watches || watches.length === 0) {
-    return await interaction.reply({
+    return await interaction.editReply({
       content: "You have no watches in this server",
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -48,8 +43,7 @@ export const listWatch = async (
     })
     .setTimestamp(new Date());
 
-  return await interaction.reply({
+  return await interaction.editReply({
     embeds: [notificationEmbed],
-    flags: MessageFlags.Ephemeral,
   });
 };

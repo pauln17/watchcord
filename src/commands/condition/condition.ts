@@ -1,7 +1,6 @@
 import {
   ChatInputCommandInteraction,
   InteractionContextType,
-  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -77,9 +76,8 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
   if (!interaction.guild || !interaction.guildId) {
-    return await interaction.reply({
+    return await interaction.editReply({
       content: "Guild not found",
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -91,9 +89,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     case "remove":
       return await removeCondition(interaction, services);
     default:
-      return await interaction.reply({
+      return await interaction.editReply({
         content: "Invalid Subcommand",
-        ephemeral: true,
       });
   }
 }

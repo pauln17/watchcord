@@ -6,5 +6,7 @@ export const data = new SlashCommandBuilder()
   .toJSON();
 
 export async function execute(interaction: CommandInteraction) {
-  return interaction.reply("Here is a list of all the commands available:");
+  return interaction.editReply({
+    content: "Here is a list of all the commands available:",
+  });
 }

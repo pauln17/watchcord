@@ -6,7 +6,8 @@ export const data = new SlashCommandBuilder()
   .toJSON();
 
 export async function execute(interaction: CommandInteraction) {
-  return interaction.reply(
-    "Watchcord is a selective alerting bot for Discord that lets you watch specific channels for important messages, keywords, or patterns. It helps you stay on top of the things you care about without needing to constantly check every noisy server.",
-  );
+  return interaction.editReply({
+    content:
+      "Watchcord is a selective alerting bot for Discord that lets you watch specific channels for important messages, keywords, or patterns. It helps you stay on top of the things you care about without needing to constantly check every noisy server.",
+  });
 }

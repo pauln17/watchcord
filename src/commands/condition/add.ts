@@ -1,7 +1,6 @@
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
-  MessageFlags,
 } from "discord.js";
 
 import type { IServices } from "../../services";
@@ -24,9 +23,8 @@ export const addCondition = async (
   );
 
   if (!watch) {
-    return await interaction.reply({
+    return await interaction.editReply({
       content: "Watch not found",
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -80,8 +78,7 @@ export const addCondition = async (
     })
     .setTimestamp(new Date());
 
-  return await interaction.reply({
+  return await interaction.editReply({
     embeds: [notificationEmbed],
-    flags: MessageFlags.Ephemeral,
   });
 };

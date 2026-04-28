@@ -1,8 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  MessageFlags,
-} from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 
 import type { IServices } from "../../services";
 import type { ScopeType } from "../../types";
@@ -28,9 +24,8 @@ export const editWatch = async (
   );
 
   if (!watch) {
-    return await interaction.reply({
+    return await interaction.editReply({
       content: "Watch not found",
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -53,8 +48,7 @@ export const editWatch = async (
     })
     .setTimestamp(new Date());
 
-  return await interaction.reply({
+  return await interaction.editReply({
     embeds: [notificationEmbed],
-    flags: MessageFlags.Ephemeral,
   });
 };

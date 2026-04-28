@@ -1,8 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  MessageFlags,
-} from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 
 import type { IServices } from "../../services";
 
@@ -18,9 +14,8 @@ export const removeCondition = async (
   );
 
   if (!condition) {
-    return await interaction.reply({
+    return await interaction.editReply({
       content: "Condition not found",
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -56,8 +51,7 @@ export const removeCondition = async (
     })
     .setTimestamp(new Date());
 
-  return await interaction.reply({
+  return await interaction.editReply({
     embeds: [notificationEmbed],
-    flags: MessageFlags.Ephemeral,
   });
 };

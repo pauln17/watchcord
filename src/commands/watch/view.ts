@@ -1,8 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  MessageFlags,
-} from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 
 import type { IServices } from "../../services";
 import { titleCase } from "../../util/strings";
@@ -19,9 +15,8 @@ export const viewWatch = async (
   );
 
   if (!watch) {
-    return await interaction.reply({
+    return await interaction.editReply({
       content: "Watch not found",
-      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -63,8 +58,7 @@ export const viewWatch = async (
     })
     .setTimestamp(new Date());
 
-  return await interaction.reply({
+  return await interaction.editReply({
     embeds: [notificationEmbed],
-    flags: MessageFlags.Ephemeral,
   });
 };
