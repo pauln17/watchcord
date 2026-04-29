@@ -58,7 +58,6 @@ const matchesCondition = (condition: Condition, message: Message) => {
 
 const sendNotification = async (
   client: Client,
-  services: IServices,
   watch: Watch,
   matchedConditions: Condition[],
   message: Message,
@@ -86,42 +85,58 @@ const sendNotification = async (
       },
       {
         name: `Conditions Matched (${matchedConditions.length})`,
-        value: matchedConditions
-          .map((condition) =>
-            (() => {
-              const lines: string[] = [
-                `**Name:** ${condition.name}`,
-                `**Type:** ${titleCase(condition.type)}`,
-                `**Case Sensitive:** ${condition.sensitive ? "Enabled" : "Disabled"}`,
-              ];
+        value: (
+          await Promise.all(
+            matchedConditions.map((condition) =>
+              (async () => {
+                const lines: string[] = [
+                  `**Name:** ${condition.name}`,
+                  `**Type:** ${titleCase(condition.type)}`,
+                  `**Case Sensitive:** ${condition.sensitive ? "Enabled" : "Disabled"}`,
+                ];
 
-              if (condition.include.length > 0) {
-                lines.push(
-                  `**Include Terms (${condition.include.length}):** ${condition.include.join(", ")}`,
-                );
-              }
-              if (condition.exclude.length > 0) {
-                lines.push(
-                  `**Exclude Terms (${condition.exclude.length}):** ${condition.exclude.join(", ")}`,
-                );
-              }
+                if (condition.include.length > 0) {
+                  lines.push(
+                    `**Include Terms (${condition.include.length}):** ${condition.include.join(", ")}`,
+                  );
+                }
+                if (condition.exclude.length > 0) {
+                  lines.push(
+                    `**Exclude Terms (${condition.exclude.length}):** ${condition.exclude.join(", ")}`,
+                  );
+                }
 
-              if (condition.targetUsers.length > 0) {
-                lines.push(
-                  `**Condition User(s):** ${condition.targetUsers.map((id) => `<@${id}>`).join(", ")}`,
+                const targetUserNames = await Promise.all(
+                  condition.targetUsers.map(async (id) => {
+                    const user = await client.users.fetch(id);
+                    return user ? `${user.username}` : id;
+                  }),
                 );
-              }
+                if (condition.targetUsers.length > 0) {
+                  lines.push(
+                    `**Condition User(s):** ${targetUserNames.join(", ")}`,
+                  );
+                }
 
-              if (condition.targetRoles.length > 0) {
-                lines.push(
-                  `**Condition Role(s):** ${condition.targetRoles.map((id) => `<@&${id}>`).join(", ")}`,
+                const targetRoleNames = await Promise.all(
+                  condition.targetRoles.map(async (id) => {
+                    const role = await client.guilds.cache
+                      .get(watch.guildId)
+                      ?.roles.fetch(id);
+                    return role ? `${role.name}` : id;
+                  }),
                 );
-              }
+                if (condition.targetRoles.length > 0) {
+                  lines.push(
+                    `**Condition Role(s):** ${targetRoleNames.join(", ")}`,
+                  );
+                }
 
-              return lines.join("\n");
-            })(),
+                return lines.join("\n");
+              })(),
+            ),
           )
-          .join("\n\n"),
+        ).join("\n\n"),
       },
     )
     .setFooter({
@@ -153,7 +168,7 @@ export async function handleMessageCreate(
 
     await Promise.all(
       watches.map(async (watch) => {
-        if (watch.userId === message.author.id) return;
+        // if (watch.userId === message.author.id) return;
 
         const matchedConditions = watch.conditions.filter((condition) =>
           matchesCondition(condition, message),
@@ -161,13 +176,7 @@ export async function handleMessageCreate(
 
         if (matchedConditions.length > 0) {
           try {
-            await sendNotification(
-              client,
-              services,
-              watch,
-              matchedConditions,
-              message,
-            );
+            await sendNotification(client, watch, matchedConditions, message);
           } catch (error) {
             logger.error({
               message: `Failed to send notification on watch: ${watch.id} to user: ${watch.userId}`,
