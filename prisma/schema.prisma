@@ -29,13 +29,15 @@ model Watch {
 }
 
 model Condition {
-  id            String         @id @default(uuid())
-  watchId       String
-  name          String
-  type          ConditionType
-  targetUserIds String[]
-  targetRoleIds String[]
-  value         String?
+  id          String        @id @default(uuid())
+  watchId     String
+  name        String
+  type        ConditionType
+  sensitive   Boolean       @default(false)
+  include     String[]      @default([])
+  exclude     String[]      @default([])
+  targetUsers String[]      @default([])
+  targetRoles String[]      @default([])
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 
@@ -44,7 +46,7 @@ model Condition {
 }
 
 enum ConditionType {
-  NONE
+  ANY
   TERM
 }
 

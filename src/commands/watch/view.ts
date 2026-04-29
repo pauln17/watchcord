@@ -20,21 +20,26 @@ export const viewWatch = async (
     });
   }
 
-  let conditions = "";
-  watch.conditions.forEach((condition) => {
-    conditions += [
-      `Name: ${condition.name}`,
-      `Type: ${condition.type ?? "N/A"}`,
-      `Value: ${condition.value ?? "N/A"}`,
-      condition.targetUserIds.length > 0 &&
-        `User(s): ${condition.targetUserIds.map((id: string) => `<@${id}>`).join(", ")}`,
-      condition.targetRoleIds.length > 0 &&
-        `Role(s): ${condition.targetRoleIds.map((id: string) => `<@&${id}>`).join(", ")}`,
-      "\n",
-    ]
-      .filter(Boolean)
-      .join("\n");
-  });
+  const conditions = watch.conditions
+    .map((condition) =>
+      [
+        `**Name:** ${condition.name}`,
+        `**ID:** \`${condition.id}\``,
+        `**Type:** ${condition.type}`,
+        `**Case Sensitive:** ${condition.sensitive ? "Enabled" : "Disabled"}`,
+        condition.include.length > 0 &&
+          `**Include Terms (${condition.include.length}):** ${condition.include.join(", ")}`,
+        condition.exclude.length > 0 &&
+          `**Exclude Terms (${condition.exclude.length}):** ${condition.exclude.join(", ")}`,
+        condition.targetUsers.length > 0 &&
+          `**Target Users (${condition.targetUsers.length}):** ${condition.targetUsers.map((id) => `<@${id}>`).join(", ")}`,
+        condition.targetRoles.length > 0 &&
+          `**Target Roles (${condition.targetRoles.length}):** ${condition.targetRoles.map((id) => `<@&${id}>`).join(", ")}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    )
+    .join("\n\n");
 
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")

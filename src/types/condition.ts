@@ -1,4 +1,4 @@
-export const ConditionTypes = ["NONE", "TERM"] as const;
+export const ConditionTypes = ["ANY", "TERM"] as const;
 export type ConditionType = (typeof ConditionTypes)[number];
 
 export interface Condition {
@@ -6,7 +6,9 @@ export interface Condition {
   watchId: string;
   name: string;
   type: ConditionType;
-  targetUserIds: string[];
-  targetRoleIds: string[];
-  value: string | null;
+  sensitive: boolean;
+  include: string[];
+  exclude: string[];
+  targetUsers: string[];
+  targetRoles: string[];
 }

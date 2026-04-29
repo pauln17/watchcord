@@ -24,26 +24,45 @@ export const removeCondition = async (
     .setTitle("Condition Removed")
     .setDescription("Your condition has been removed successfully.")
     .addFields(
-      { name: "Name", value: `${condition.name}` },
+      { name: "Name", value: condition.name },
       { name: "ID", value: `\`${condition.id}\`` },
-      { name: "Type", value: `${condition.type ?? "N/A"}` },
-      { name: "Value", value: `${condition.value ?? "N/A"}` },
+      { name: "Type", value: condition.type },
       {
-        name: "Target User IDs",
-        value:
-          condition.targetUserIds.length > 0
-            ? condition.targetUserIds.map((id: string) => `<@${id}>`).join(", ")
-            : "None",
+        name: "Case Sensitive",
+        value: condition.sensitive ? "Enabled" : "Disabled",
       },
-      {
-        name: "Target Role IDs",
-        value:
-          condition.targetRoleIds.length > 0
-            ? condition.targetRoleIds
-                .map((id: string) => `<@&${id}>`)
-                .join(", ")
-            : "None",
-      },
+      ...(condition.include.length > 0
+        ? [
+            {
+              name: `Include Terms (${condition.include.length})`,
+              value: condition.include.join(", "),
+            },
+          ]
+        : []),
+      ...(condition.exclude.length > 0
+        ? [
+            {
+              name: `Exclude Terms (${condition.exclude.length})`,
+              value: condition.exclude.join(", "),
+            },
+          ]
+        : []),
+      ...(condition.targetUsers.length > 0
+        ? [
+            {
+              name: `Target Users (${condition.targetUsers.length})`,
+              value: condition.targetUsers.map((id) => `<@${id}>`).join(", "),
+            },
+          ]
+        : []),
+      ...(condition.targetRoles.length > 0
+        ? [
+            {
+              name: `Target Roles (${condition.targetRoles.length})`,
+              value: condition.targetRoles.map((id) => `<@&${id}>`).join(", "),
+            },
+          ]
+        : []),
     )
     .setFooter({
       text: "Watchcord",

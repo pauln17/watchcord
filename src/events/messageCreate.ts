@@ -6,21 +6,51 @@ import type { ILogger } from "../util/logger";
 import { titleCase } from "../util/strings";
 
 const matchesCondition = (condition: Condition, message: Message) => {
-  const { type, value, targetUserIds = [], targetRoleIds = [] } = condition;
+  const {
+    sensitive,
+    type,
+    include,
+    exclude,
+    targetUsers = [],
+    targetRoles = [],
+  } = condition;
 
-  if (targetUserIds.length > 0 && !targetUserIds.includes(message.author.id))
+  if (targetUsers.length > 0 && !targetUsers.includes(message.author.id))
     return false;
   if (
-    targetRoleIds.length > 0 &&
+    targetRoles.length > 0 &&
     (!message.member ||
-      !targetRoleIds.some((roleId) => message.member!.roles.cache.has(roleId)))
+      !targetRoles.some((roleId) => message.member!.roles.cache.has(roleId)))
   )
     return false;
 
   switch (type) {
     case "TERM":
-      if (typeof value !== "string") return false;
-      return message.content.includes(value);
+      if (include.length === 0 && exclude.length === 0) return false;
+
+      if (include.length > 0) {
+        if (
+          !include.some((term) =>
+            sensitive
+              ? message.content.includes(term)
+              : message.content.toLowerCase().includes(term.toLowerCase()),
+          )
+        )
+          return false;
+      }
+
+      if (exclude.length > 0) {
+        if (
+          exclude.some((term) =>
+            sensitive
+              ? message.content.includes(term)
+              : message.content.toLowerCase().includes(term.toLowerCase()),
+          )
+        )
+          return false;
+      }
+
+      return true;
     default:
       return true;
   }
@@ -60,19 +90,30 @@ const sendNotification = async (
             (() => {
               const lines: string[] = [
                 `**Name:** ${condition.name}`,
-                `**Type:** ${condition.type ? titleCase(condition.type) : "N/A"}`,
-                `**Value:** ${condition.value ?? "N/A"}`,
+                `**Type:** ${titleCase(condition.type)}`,
+                `**Case Sensitive:** ${condition.sensitive ? "Enabled" : "Disabled"}`,
               ];
 
-              if (condition.targetUserIds.length > 0) {
+              if (condition.include.length > 0) {
                 lines.push(
-                  `**Condition User(s):** ${condition.targetUserIds.map((id) => `<@${id}>`).join(", ")}`,
+                  `**Include Terms (${condition.include.length}):** ${condition.include.join(", ")}`,
+                );
+              }
+              if (condition.exclude.length > 0) {
+                lines.push(
+                  `**Exclude Terms (${condition.exclude.length}):** ${condition.exclude.join(", ")}`,
                 );
               }
 
-              if (condition.targetRoleIds.length > 0) {
+              if (condition.targetUsers.length > 0) {
                 lines.push(
-                  `**Condition Role(s):** ${condition.targetRoleIds.map((id) => `<@&${id}>`).join(", ")}`,
+                  `**Condition User(s):** ${condition.targetUsers.map((id) => `<@${id}>`).join(", ")}`,
+                );
+              }
+
+              if (condition.targetRoles.length > 0) {
+                lines.push(
+                  `**Condition Role(s):** ${condition.targetRoles.map((id) => `<@&${id}>`).join(", ")}`,
                 );
               }
 

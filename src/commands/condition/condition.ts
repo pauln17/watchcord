@@ -4,6 +4,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
+import { CONDITION_LIMITS } from "../../constants/conditionLimits";
 import type { ExtendedClient } from "../../discord/ExtendedClient";
 import { addCondition } from "./add";
 import { removeCondition } from "./remove";
@@ -34,29 +35,55 @@ export const data = new SlashCommandBuilder()
           .setName("type")
           .setDescription("The type of the condition")
           .addChoices(
-            { name: "None", value: "NONE" },
+            { name: "Any", value: "ANY" },
             { name: "Term", value: "TERM" },
           )
           .setRequired(true),
       )
       .addStringOption((option) =>
         option
-          .setName("value")
-          .setDescription("The value of the condition")
+          .setName("include")
+          .setDescription(
+            `The terms to include (term1, term2, term3, etc.) max ${CONDITION_LIMITS.maxIncludeTerms} terms`,
+          )
           .setMinLength(1)
-          .setMaxLength(100)
+          .setMaxLength(CONDITION_LIMITS.maxInputLength)
           .setRequired(false),
       )
       .addStringOption((option) =>
         option
-          .setName("target-user-ids")
-          .setDescription("The user IDs to target (id1, id2, id3, etc.)")
+          .setName("exclude")
+          .setDescription(
+            `The terms to exclude (term1, term2, term3, etc.) max ${CONDITION_LIMITS.maxExcludeTerms} terms`,
+          )
+          .setMinLength(1)
+          .setMaxLength(CONDITION_LIMITS.maxInputLength)
+          .setRequired(false),
+      )
+      .addBooleanOption((option) =>
+        option
+          .setName("sensitive")
+          .setDescription("Whether the condition matches case-sensitively")
           .setRequired(false),
       )
       .addStringOption((option) =>
         option
-          .setName("target-role-ids")
-          .setDescription("The role IDs to target (id1, id2, id3, etc.)")
+          .setName("target-users")
+          .setDescription(
+            `The users to target (id1, id2, id3, etc.) max ${CONDITION_LIMITS.maxTargetUsers} users`,
+          )
+          .setMinLength(1)
+          .setMaxLength(CONDITION_LIMITS.maxInputLength)
+          .setRequired(false),
+      )
+      .addStringOption((option) =>
+        option
+          .setName("target-roles")
+          .setDescription(
+            `The roles to target (id1, id2, id3, etc.) max ${CONDITION_LIMITS.maxTargetRoles} roles`,
+          )
+          .setMinLength(1)
+          .setMaxLength(CONDITION_LIMITS.maxInputLength)
           .setRequired(false),
       ),
   )
