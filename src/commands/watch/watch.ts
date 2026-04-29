@@ -5,7 +5,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import type { ExtendedClient } from "../../discord/ExtendedClient";
+import type { IServices } from "../../services";
 import { addWatch } from "./add";
 import { editWatch } from "./edit";
 import { listWatch } from "./list";
@@ -110,15 +110,16 @@ export const data = new SlashCommandBuilder()
   )
   .toJSON();
 
-export async function execute(interaction: ChatInputCommandInteraction) {
+export async function execute(
+  interaction: ChatInputCommandInteraction,
+  services: IServices,
+) {
   const subcommand = interaction.options.getSubcommand();
   if (!interaction.guild || !interaction.guildId) {
     return await interaction.editReply({
       content: "These commands can only be used in a server",
     });
   }
-
-  const services = (interaction.client as ExtendedClient).services;
 
   switch (subcommand) {
     case "list":
@@ -133,7 +134,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       return await removeWatch(interaction, services);
     default:
       return await interaction.editReply({
-        content: "Invalid Subcommand",
+        content:
+          "You have entered an unknown subcommand. Run `/cmds` to view available commands.",
       });
   }
 }

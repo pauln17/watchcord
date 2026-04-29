@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 
 import { CONDITION_LIMITS } from "../../constants/conditionLimits";
-import type { ExtendedClient } from "../../discord/ExtendedClient";
+import type { IServices } from "../../services";
 import { addCondition } from "./add";
 import { removeCondition } from "./remove";
 
@@ -101,15 +101,16 @@ export const data = new SlashCommandBuilder()
   )
   .toJSON();
 
-export async function execute(interaction: ChatInputCommandInteraction) {
+export async function execute(
+  interaction: ChatInputCommandInteraction,
+  services: IServices,
+) {
   const subcommand = interaction.options.getSubcommand();
   if (!interaction.guild || !interaction.guildId) {
     return await interaction.editReply({
-      content: "Guild not found",
+      content: "These commands can only be used in a server",
     });
   }
-
-  const services = (interaction.client as ExtendedClient).services;
 
   switch (subcommand) {
     case "add":
@@ -118,7 +119,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       return await removeCondition(interaction, services);
     default:
       return await interaction.editReply({
-        content: "Invalid Subcommand",
+        content:
+          "You have entered an unknown subcommand. Run `/cmds` to view available commands.",
       });
   }
 }

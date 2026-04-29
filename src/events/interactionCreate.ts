@@ -1,24 +1,32 @@
-import type { Interaction } from "discord.js";
+import type {
+  Client,
+  Collection,
+  Interaction,
+  RESTPostAPIApplicationCommandsJSONBody,
+} from "discord.js";
 
-import type { ExtendedClient } from "../discord/ExtendedClient";
 import { ValidationError } from "../errors/ValidationError";
+import type { IServices } from "../services";
+import type { Command } from "../types";
 import type { ILogger } from "../util/logger";
 
 export async function handleInteractionCreate(
-  client: ExtendedClient,
+  client: Client,
   interaction: Interaction,
+  services: IServices,
+  commands: Collection<string, Command>,
   logger: ILogger,
 ) {
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName } = interaction;
 
-  const command = client.commands.get(commandName);
+  const command = commands.get(commandName);
   if (!command) return;
 
   try {
     await interaction.deferReply({ ephemeral: true });
-    await command.execute(interaction);
+    await command.execute(interaction, services);
   } catch (error) {
     if (error instanceof ValidationError) {
       await interaction.editReply({

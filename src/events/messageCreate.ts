@@ -1,6 +1,6 @@
-import { EmbedBuilder, type Message } from "discord.js";
+import { Client, EmbedBuilder, type Message } from "discord.js";
 
-import type { ExtendedClient } from "../discord/ExtendedClient";
+import type { IServices } from "../services";
 import type { Condition, Watch } from "../types";
 import type { ILogger } from "../util/logger";
 import { titleCase } from "../util/strings";
@@ -57,7 +57,8 @@ const matchesCondition = (condition: Condition, message: Message) => {
 };
 
 const sendNotification = async (
-  client: ExtendedClient,
+  client: Client,
+  services: IServices,
   watch: Watch,
   matchedConditions: Condition[],
   message: Message,
@@ -134,8 +135,9 @@ const sendNotification = async (
 };
 
 export async function handleMessageCreate(
-  client: ExtendedClient,
+  client: Client,
   message: Message,
+  services: IServices,
   logger: ILogger,
 ) {
   const { guildId, channelId, content } = message;
@@ -143,8 +145,8 @@ export async function handleMessageCreate(
 
   try {
     const [guildScopedWatches, channelScopedWatches] = await Promise.all([
-      client.services.watchService.getGuildScopedWatches(guildId),
-      client.services.watchService.getChannelScopedWatches(guildId, channelId),
+      services.watchService.getGuildScopedWatches(guildId),
+      services.watchService.getChannelScopedWatches(guildId, channelId),
     ]);
 
     const watches = [...guildScopedWatches, ...channelScopedWatches];
@@ -159,7 +161,13 @@ export async function handleMessageCreate(
 
         if (matchedConditions.length > 0) {
           try {
-            await sendNotification(client, watch, matchedConditions, message);
+            await sendNotification(
+              client,
+              services,
+              watch,
+              matchedConditions,
+              message,
+            );
           } catch (error) {
             logger.error({
               message: `Failed to send notification on watch: ${watch.id} to user: ${watch.userId}`,
