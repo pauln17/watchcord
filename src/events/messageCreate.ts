@@ -21,13 +21,6 @@ const matchesCondition = (condition: Condition, message: Message) => {
     case "TERM":
       if (typeof value !== "string") return false;
       return message.content.includes(value);
-    case "REGEX":
-      try {
-        if (typeof value !== "string") return false;
-        return new RegExp(value).test(message.content);
-      } catch {
-        return false;
-      }
     default:
       return true;
   }

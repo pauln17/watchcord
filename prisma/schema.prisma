@@ -46,7 +46,6 @@ model Condition {
 enum ConditionType {
   NONE
   TERM
-  REGEX
 }
 
 enum ScopeType {

@@ -1,4 +1,4 @@
-export const ConditionTypes = ["NONE", "TERM", "REGEX"] as const;
+export const ConditionTypes = ["NONE", "TERM"] as const;
 export type ConditionType = (typeof ConditionTypes)[number];
 
 export interface Condition {

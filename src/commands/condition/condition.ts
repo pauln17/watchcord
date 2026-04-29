@@ -36,7 +36,6 @@ export const data = new SlashCommandBuilder()
           .addChoices(
             { name: "None", value: "NONE" },
             { name: "Term", value: "TERM" },
-            { name: "Regex", value: "REGEX" },
           )
           .setRequired(true),
       )
@@ -44,6 +43,8 @@ export const data = new SlashCommandBuilder()
         option
           .setName("value")
           .setDescription("The value of the condition")
+          .setMinLength(1)
+          .setMaxLength(100)
           .setRequired(false),
       )
       .addStringOption((option) =>
