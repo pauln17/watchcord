@@ -5,13 +5,13 @@ import type { Watch } from "../types";
 
 export interface IWatchService {
   getWatches: () => Promise<Watch[]>;
+  getUserWatch: (id: string, userId: string) => Promise<Watch | null>;
+  getUserWatches: (userId: string, guildId: string) => Promise<Watch[]>;
   getGuildScopedWatches: (guildId: string) => Promise<Watch[]>;
   getChannelScopedWatches: (
     guildId: string,
     channelId: string,
   ) => Promise<Watch[]>;
-  getUserWatch: (id: string, userId: string) => Promise<Watch | null>;
-  getUserWatches: (userId: string, guildId: string) => Promise<Watch[]>;
   createUserWatch: (data: Omit<Watch, "id" | "conditions">) => Promise<Watch>;
   updateUserWatch: (
     id: string,
@@ -29,38 +29,6 @@ export class WatchService implements IWatchService {
 
   getWatches = async (): Promise<Watch[]> => {
     return await this.repositories.watchRepository.findAll();
-  };
-
-  getGuildScopedWatches = async (guildId: string): Promise<Watch[]> => {
-    const cached = await this.cache.getGuildScopedWatches(guildId);
-    if (cached !== null) return cached;
-
-    const watches =
-      await this.repositories.watchRepository.findManyGuildScopedByGuildId(
-        guildId,
-      );
-
-    await this.cache.setGuildScopedWatches(guildId, watches);
-
-    return watches;
-  };
-
-  getChannelScopedWatches = async (
-    guildId: string,
-    channelId: string,
-  ): Promise<Watch[]> => {
-    const cached = await this.cache.getChannelScopedWatches(channelId);
-    if (cached !== null) return cached;
-
-    const watches =
-      await this.repositories.watchRepository.findManyChannelScopedByGuildIdAndChannelId(
-        guildId,
-        channelId,
-      );
-
-    await this.cache.setChannelScopedWatches(channelId, watches);
-
-    return watches;
   };
 
   getUserWatch = async (id: string, userId: string): Promise<Watch | null> => {
@@ -91,6 +59,38 @@ export class WatchService implements IWatchService {
       );
 
     await this.cache.setUserWatches(userId, guildId, watches);
+
+    return watches;
+  };
+
+  getGuildScopedWatches = async (guildId: string): Promise<Watch[]> => {
+    const cached = await this.cache.getGuildScopedWatches(guildId);
+    if (cached !== null) return cached;
+
+    const watches =
+      await this.repositories.watchRepository.findManyGuildScopedByGuildId(
+        guildId,
+      );
+
+    await this.cache.setGuildScopedWatches(guildId, watches);
+
+    return watches;
+  };
+
+  getChannelScopedWatches = async (
+    guildId: string,
+    channelId: string,
+  ): Promise<Watch[]> => {
+    const cached = await this.cache.getChannelScopedWatches(channelId);
+    if (cached !== null) return cached;
+
+    const watches =
+      await this.repositories.watchRepository.findManyChannelScopedByGuildIdAndChannelId(
+        guildId,
+        channelId,
+      );
+
+    await this.cache.setChannelScopedWatches(channelId, watches);
 
     return watches;
   };
