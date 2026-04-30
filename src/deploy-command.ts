@@ -2,13 +2,15 @@ import "dotenv/config";
 
 import { REST, Routes } from "discord.js";
 
-import { commands } from "./commands";
+import { commandModules } from "./commands";
 import { logger } from "./util/logger";
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
 (async () => {
-  const commandsData = Object.values(commands).map((command) => command.data);
+  const commandsData = Object.values(commandModules).map(
+    (command) => command.data,
+  );
 
   try {
     logger.info({
