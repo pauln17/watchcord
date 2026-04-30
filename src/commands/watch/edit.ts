@@ -10,6 +10,7 @@ export const editWatch = async (
 ) => {
   const watchId = interaction.options.getString("id", true);
   const name = interaction.options.getString("name");
+  const enabled = interaction.options.getBoolean("enabled");
   const scope = interaction.options.getString("scope") as ScopeType;
   const channel = interaction.options.getChannel("channel");
 
@@ -18,6 +19,7 @@ export const editWatch = async (
     interaction.user.id,
     {
       ...(name != null ? { name } : {}),
+      ...(enabled != null ? { enabled } : {}),
       ...(scope != null ? { scope } : {}),
       ...(channel != null ? { channelId: channel.id } : {}),
     },

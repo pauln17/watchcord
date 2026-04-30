@@ -59,6 +59,12 @@ export const data = new SlashCommandBuilder()
           .setDescription("The channel to watch")
           .addChannelTypes(ChannelType.GuildText)
           .setRequired(false),
+      )
+      .addBooleanOption((option) =>
+        option
+          .setName("enabled")
+          .setDescription("Whether the watch is enabled")
+          .setRequired(false),
       ),
   )
   // Edit Subcommand
@@ -93,6 +99,12 @@ export const data = new SlashCommandBuilder()
           .setName("channel")
           .setDescription("The channel to watch")
           .addChannelTypes(ChannelType.GuildText)
+          .setRequired(false),
+      )
+      .addBooleanOption((option) =>
+        option
+          .setName("enabled")
+          .setDescription("Whether the watch is enabled")
           .setRequired(false),
       ),
   )

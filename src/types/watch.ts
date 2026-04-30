@@ -7,8 +7,9 @@ export interface Watch {
   id: string;
   name: string;
   userId: string;
+  enabled: boolean;
   scope: ScopeType;
+  conditions: Condition[];
   guildId: string;
   channelId: string | null;
-  conditions: Condition[];
 }

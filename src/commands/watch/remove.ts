@@ -27,6 +27,7 @@ export const removeWatch = async (
     .addFields(
       { name: "Name", value: `${watch.name}` },
       { name: "ID", value: `\`${watch.id}\`` },
+      { name: "Enabled", value: `${watch.enabled ? "True" : "False"}` },
       { name: "Scope", value: `${titleCase(watch.scope)}` },
       { name: "Server", value: `${interaction.guild?.name}` },
       ...(watch.scope === "CHANNEL" && watch.channelId

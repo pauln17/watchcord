@@ -16,6 +16,7 @@ model Watch {
   id        String    @id @default(uuid())
   userId    String
   name      String
+  enabled   Boolean
   scope     ScopeType
   guildId   String
   channelId String?
@@ -33,11 +34,11 @@ model Condition {
   watchId     String
   name        String
   type        ConditionType
-  sensitive   Boolean       @default(false)
-  include     String[]      @default([])
-  exclude     String[]      @default([])
-  targetUsers String[]      @default([])
-  targetRoles String[]      @default([])
+  sensitive   Boolean     
+  include     String[]      
+  exclude     String[]      
+  targetUsers String[]      
+  targetRoles String[]      
 
   watch Watch @relation(fields: [watchId], references: [id], onDelete: Cascade)
 

@@ -23,6 +23,7 @@ export const listWatch = async (
       return [
         `**Name:** ${watch.name}`,
         `**ID:** \`${watch.id}\``,
+        `**Enabled:** ${watch.enabled ? "True" : "False"}`,
         `**Scope:** ${titleCase(watch.scope)}`,
         `**Server:** ${interaction.guild?.name ?? `\`${watch.guildId}\``}`,
         ...(watch.scope === "CHANNEL" && watch.channelId

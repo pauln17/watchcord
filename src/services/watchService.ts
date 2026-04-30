@@ -127,11 +127,12 @@ export class WatchService implements IWatchService {
   updateUserWatch = async (
     id: string,
     userId: string,
-    data: Partial<Pick<Watch, "name" | "scope" | "channelId">>,
+    data: Partial<Pick<Watch, "name" | "enabled" | "scope" | "channelId">>,
   ): Promise<Watch | null> => {
     if (
       data.name === undefined &&
       data.scope === undefined &&
+      data.enabled === undefined &&
       data.channelId === undefined
     ) {
       throw new ValidationError("At least one option is required");
@@ -161,6 +162,7 @@ export class WatchService implements IWatchService {
 
     const watch = await this.repositories.watchRepository.updateById(id, {
       ...(data.name != null ? { name: data.name } : {}),
+      ...(data.enabled != null ? { enabled: data.enabled } : {}),
       ...(data.scope != null ? { scope: data.scope } : {}),
       ...(data.scope === "GUILD"
         ? { channelId: null }
