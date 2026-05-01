@@ -3,11 +3,12 @@ import { describe, expect, test, vi } from "vitest";
 import { ValidationError } from "../../../errors/ValidationError";
 import { WatchService } from "../../../services/watchService";
 import type { ScopeType } from "../../../types";
-import { createCache, createRepos, watches } from "./helpers";
+import { createCache, createMockWatch, createRepos } from "./helpers";
 
 describe("WatchService", () => {
   describe("getWatches", async () => {
     test("retrieves all watches from repo", async () => {
+      const watches = [createMockWatch()];
       const repos = createRepos({
         watchRepository: {
           findAll: vi.fn().mockResolvedValue(watches),
@@ -25,24 +26,26 @@ describe("WatchService", () => {
 
   describe("getUserWatch", async () => {
     test("cache hit -> return cached, skip repo/set", async () => {
+      const watch = createMockWatch();
       const repos = createRepos({});
       const cache = createCache({
-        getUserWatch: vi.fn().mockResolvedValue(watches[0]),
+        getUserWatch: vi.fn().mockResolvedValue(watch),
       });
 
       const service = new WatchService(repos, cache);
       const result = await service.getUserWatch("w-1", "u-1");
 
-      expect(result).toBe(watches[0]);
+      expect(result).toBe(watch);
       expect(cache.getUserWatch).toHaveBeenCalledWith("w-1", "u-1");
       expect(repos.watchRepository.findByIdAndUserId).not.toHaveBeenCalled();
       expect(cache.setUserWatch).not.toHaveBeenCalled();
     });
 
     test("cache miss -> repo fetch, set cache, return watches", async () => {
+      const watch = createMockWatch();
       const repos = createRepos({
         watchRepository: {
-          findByIdAndUserId: vi.fn().mockResolvedValue(watches[0]),
+          findByIdAndUserId: vi.fn().mockResolvedValue(watch),
         },
       });
       const cache = createCache({
@@ -52,17 +55,18 @@ describe("WatchService", () => {
       const service = new WatchService(repos, cache);
       const result = await service.getUserWatch("w-1", "u-1");
 
-      expect(result).toBe(watches[0]);
+      expect(result).toBe(watch);
       expect(repos.watchRepository.findByIdAndUserId).toHaveBeenCalledWith(
         "w-1",
         "u-1",
       );
-      expect(cache.setUserWatch).toHaveBeenCalledWith("w-1", "u-1", watches[0]);
+      expect(cache.setUserWatch).toHaveBeenCalledWith("w-1", "u-1", watch);
     });
   });
 
   describe("getUserWatches", () => {
     test("cache hit -> return cached, skip repo", async () => {
+      const watches = [createMockWatch()];
       const repos = createRepos({});
       const cache = createCache({
         getUserWatches: vi.fn().mockResolvedValue(watches),
@@ -80,6 +84,7 @@ describe("WatchService", () => {
     });
 
     test("cache miss -> repo fetch, set cache, return watches", async () => {
+      const watches = [createMockWatch()];
       const repos = createRepos({
         watchRepository: {
           findManyByUserIdAndGuildId: vi.fn().mockResolvedValue(watches),
@@ -103,6 +108,7 @@ describe("WatchService", () => {
 
   describe("getGuildScopedWatches", async () => {
     test("cache hit -> return cached, skip repo/set", async () => {
+      const watches = [createMockWatch()];
       const repos = createRepos({});
       const cache = createCache({
         getGuildScopedWatches: vi.fn().mockResolvedValue(watches),
@@ -120,6 +126,7 @@ describe("WatchService", () => {
     });
 
     test("cache miss -> repo fetch, set cache, return watches", async () => {
+      const watches = [createMockWatch()];
       const repos = createRepos({
         watchRepository: {
           findManyGuildScopedByGuildId: vi.fn().mockResolvedValue(watches),
@@ -143,6 +150,7 @@ describe("WatchService", () => {
 
   describe("getChannelScopedWatches", async () => {
     test("cache hit -> return cached, skip repo/set", async () => {
+      const watches = [createMockWatch()];
       const repos = createRepos({});
       const cache = createCache({
         getChannelScopedWatches: vi.fn().mockResolvedValue(watches),
@@ -161,6 +169,7 @@ describe("WatchService", () => {
   });
 
   test("cache miss -> repo fetch, set cache, return watches", async () => {
+    const watches = [createMockWatch()];
     const repos = createRepos({
       watchRepository: {
         findManyChannelScopedByGuildIdAndChannelId: vi
@@ -237,9 +246,10 @@ describe("WatchService", () => {
     });
 
     test("valid inputs -> create watch -> invalidate watch cache", async () => {
+      const watch = createMockWatch();
       const repos = createRepos({
         watchRepository: {
-          create: vi.fn().mockResolvedValue(watches[0]),
+          create: vi.fn().mockResolvedValue(watch),
         },
       });
       const cache = createCache({});
@@ -254,7 +264,7 @@ describe("WatchService", () => {
         channelId: null,
       });
 
-      expect(result).toBe(watches[0]);
+      expect(result).toBe(watch);
       expect(repos.watchRepository.create).toHaveBeenCalledWith({
         name: "a",
         userId: "u-1",
@@ -291,10 +301,11 @@ describe("WatchService", () => {
   });
 
   test("watch found -> valid inputs -> delete watch -> invalidate watch cache", async () => {
+    const watch = createMockWatch();
     const repos = createRepos({
       watchRepository: {
-        findByIdAndUserId: vi.fn().mockResolvedValue(watches[0]),
-        deleteById: vi.fn().mockResolvedValue(watches[0]),
+        findByIdAndUserId: vi.fn().mockResolvedValue(watch),
+        deleteById: vi.fn().mockResolvedValue(watch),
       },
     });
     const cache = createCache({});
@@ -302,7 +313,7 @@ describe("WatchService", () => {
     const service = new WatchService(repos, cache);
     const result = await service.deleteUserWatch("w-1", "u-1");
 
-    expect(result).toBe(watches[0]);
+    expect(result).toBe(watch);
     expect(repos.watchRepository.findByIdAndUserId).toHaveBeenCalledWith(
       "w-1",
       "u-1",

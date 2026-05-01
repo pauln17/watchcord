@@ -2,15 +2,20 @@ import { describe, expect, test, vi } from "vitest";
 
 import { ValidationError } from "../../../errors/ValidationError";
 import { ConditionService } from "../../../services/conditionService";
-import type { Condition, ScopeType, Watch } from "../../../types";
-import { conditions, createCache, createRepos, watches } from "./helpers";
+import {
+  createCache,
+  createMockCondition,
+  createMockWatch,
+  createRepos,
+} from "./helpers";
 
 describe("ConditionService", () => {
   describe("getUserCondition", async () => {
     test("retrieve user's condition from repo", async () => {
+      const condition = createMockCondition();
       const repos = createRepos({
         conditionRepository: {
-          findByIdAndUserId: vi.fn().mockResolvedValue(conditions[0]),
+          findByIdAndUserId: vi.fn().mockResolvedValue(condition),
         },
       });
       const cache = createCache({});
@@ -18,7 +23,7 @@ describe("ConditionService", () => {
       const service = new ConditionService(repos, cache);
       const result = await service.getUserCondition("c-1", "u-1");
 
-      expect(result).toBe(conditions[0]);
+      expect(result).toBe(condition);
       expect(repos.conditionRepository.findByIdAndUserId).toHaveBeenCalledWith(
         "c-1",
         "u-1",
@@ -137,9 +142,10 @@ describe("ConditionService", () => {
     });
 
     test("valid inputs -> create condition -> invalidate watch cache", async () => {
+      const condition = createMockCondition();
       const repos = createRepos({
         conditionRepository: {
-          create: vi.fn().mockResolvedValue(conditions[0]),
+          create: vi.fn().mockResolvedValue(condition),
         },
       });
       const cache = createCache({});
@@ -161,7 +167,7 @@ describe("ConditionService", () => {
         "u-1",
       );
 
-      expect(result).toBe(conditions[0]);
+      expect(result).toBe(condition);
       expect(repos.conditionRepository.create).toHaveBeenCalledWith({
         watchId: "w-1",
         name: "a",
@@ -199,13 +205,15 @@ describe("ConditionService", () => {
     });
 
     test("condition found -> valid inputs -> delete condition -> invalidate watch cache", async () => {
+      const condition = createMockCondition();
+      const watch = createMockWatch();
       const repos = createRepos({
         conditionRepository: {
-          findByIdAndUserId: vi.fn().mockResolvedValue(conditions[0]),
-          deleteById: vi.fn().mockResolvedValue(conditions[0]),
+          findByIdAndUserId: vi.fn().mockResolvedValue(condition),
+          deleteById: vi.fn().mockResolvedValue(condition),
         },
         watchRepository: {
-          findById: vi.fn().mockResolvedValue(watches[0]),
+          findById: vi.fn().mockResolvedValue(watch),
         },
       });
       const cache = createCache({});
@@ -213,7 +221,7 @@ describe("ConditionService", () => {
       const service = new ConditionService(repos, cache);
       const result = await service.deleteUserCondition("c-1", "u-1");
 
-      expect(result).toBe(conditions[0]);
+      expect(result).toBe(condition);
       expect(repos.conditionRepository.findByIdAndUserId).toHaveBeenCalledWith(
         "c-1",
         "u-1",
