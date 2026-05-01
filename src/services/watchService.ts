@@ -1,5 +1,5 @@
 import type { IWatchCache } from "../cache/watchCache";
-import { ValidationError } from "../errors/ValidationError";
+import { ValidationError } from "../util/error";
 import type { IRepositories } from "../repositories";
 import type { Watch } from "../types";
 

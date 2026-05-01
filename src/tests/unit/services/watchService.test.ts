@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { ValidationError } from "../../../errors/ValidationError";
+import { ValidationError } from "../../../util/error";
 import { WatchService } from "../../../services/watchService";
 import type { ScopeType } from "../../../types";
 import { createCache, createMockWatch, createRepos } from "./helpers";

@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { ValidationError } from "../../../errors/ValidationError";
+import { ValidationError } from "../../../util/error";
 import { ConditionService } from "../../../services/conditionService";
 import {
   createCache,

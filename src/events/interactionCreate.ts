@@ -5,7 +5,7 @@ import type {
   RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
 
-import { ValidationError } from "../errors/ValidationError";
+import { ValidationError } from "../util/error";
 import type { IServices } from "../services";
 import type { Command } from "../types";
 import type { ILogger } from "../util/logger";
