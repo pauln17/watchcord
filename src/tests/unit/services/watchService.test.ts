@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { ValidationError } from "../../errors/ValidationError";
-import { WatchService } from "../../services/watchService";
-import type { ScopeType } from "../../types";
+import { ValidationError } from "../../../errors/ValidationError";
+import { WatchService } from "../../../services/watchService";
+import type { ScopeType } from "../../../types";
 import { createCache, createRepos, watches } from "./helpers";
 
 describe("WatchService", () => {

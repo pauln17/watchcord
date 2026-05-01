@@ -1,10 +1,10 @@
 import { vi } from "vitest";
 
-import type { IWatchCache } from "../../cache/watchCache";
-import type { IConditionRepository } from "../../repositories/conditionRepository";
-import type { IRepositories } from "../../repositories/types";
-import type { IWatchRepository } from "../../repositories/watchRepository";
-import type { Condition, Watch } from "../../types";
+import type { IWatchCache } from "../../../cache/watchCache";
+import type { IConditionRepository } from "../../../repositories/conditionRepository";
+import type { IRepositories } from "../../../repositories/types";
+import type { IWatchRepository } from "../../../repositories/watchRepository";
+import type { Condition, Watch } from "../../../types";
 
 export const watches: Watch[] = [
   {

@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { ValidationError } from "../../errors/ValidationError";
-import { ConditionService } from "../../services/conditionService";
-import type { Condition, ScopeType, Watch } from "../../types";
+import { ValidationError } from "../../../errors/ValidationError";
+import { ConditionService } from "../../../services/conditionService";
+import type { Condition, ScopeType, Watch } from "../../../types";
 import { conditions, createCache, createRepos, watches } from "./helpers";
 
 describe("ConditionService", () => {
