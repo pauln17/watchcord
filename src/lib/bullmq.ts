@@ -1,4 +1,4 @@
-import { Queue, Worker } from "bullmq";
+import { type Job, Queue, UnrecoverableError, Worker } from "bullmq";
 import { type Client } from "discord.js";
 import IORedis from "ioredis";
 
@@ -22,10 +22,10 @@ export const startWorker = async (
 ) => {
   const worker = new Worker(
     "watchcord-tasks",
-    async (job) => {
+    async (job: Job) => {
       if (job.name === "process-message") {
         const { authorId, guildId, channelId, url, content } = job.data;
-        if (!authorId || !guildId || !channelId || !url || !content) return;
+        if (!authorId || !guildId || !channelId || !url || !content) throw new UnrecoverableError("Invalid payload for process-message job");
 
         const [guildScopedWatches, channelScopedWatches] = await Promise.all([
           services.watchService.getGuildScopedWatches(guildId),
@@ -37,10 +37,12 @@ export const startWorker = async (
           ...channelScopedWatches,
         ];
 
+        if (relevantWatches.length === 0) throw new UnrecoverableError("No relevant watches found for process-message job");
+
         const author = await client.guilds.cache
           .get(guildId)
           ?.members.fetch(authorId);
-        if (!author) return;
+        if (!author) throw new UnrecoverableError("Author not found for process-message job");
 
         const messageData = { author, guildId, channelId, url, content };
 
@@ -51,11 +53,13 @@ export const startWorker = async (
             message: `Failed to process message from author: ${authorId} in guild: ${guildId} ${channelId ? `and channel: ${channelId}` : ""}`,
             error,
           });
+          throw new Error("Failed on handleMessageCreate in process-message job");
         }
       }
 
       if (job.name === "notify-user") {
         const { watch, matchedConditionIds, messageData } = job.data;
+        if (!watch || (Array.isArray(matchedConditionIds) && matchedConditionIds.length === 0) || !messageData) throw new UnrecoverableError("Invalid payload for notify-user job");
 
         const fetchedConditions = await Promise.all(
           matchedConditionIds.map(async (conditionId: string) => {
@@ -63,14 +67,14 @@ export const startWorker = async (
               conditionId,
               watch.userId,
             );
-            if (!condition) return;
+            if (!condition) throw new UnrecoverableError("Condition not found for notify-user job");
             return condition;
           }),
         ).then((conditions) =>
           conditions.filter((condition: Condition) => condition !== undefined),
         );
 
-        if (fetchedConditions.length === 0) return;
+        if (fetchedConditions.length === 0) throw new UnrecoverableError("No conditions found for notify-user job");
 
         try {
           await notifyUser(client, watch, fetchedConditions, messageData);
@@ -79,6 +83,7 @@ export const startWorker = async (
             message: `Failed to send notification on watch: ${watch.id} to user: ${watch.userId}`,
             error,
           });
+          throw new Error("Failed on notifyUser in notify-user job");
         }
       }
     },
