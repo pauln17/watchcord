@@ -11,7 +11,18 @@ import type { ILogger } from "../util/logger";
 export const connection = new IORedis({ maxRetriesPerRequest: null });
 
 export const queue = new Queue("watchcord-tasks", {
-  defaultJobOptions: {},
+  defaultJobOptions: {
+    attempts: 8,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+      jitter: 0.5,
+    },
+    removeOnComplete: true,
+    removeOnFail: {
+      age: 24 * 3600 // 24 hours
+    }
+  },
   connection,
 });
 
