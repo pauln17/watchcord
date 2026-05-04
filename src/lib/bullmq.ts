@@ -7,7 +7,8 @@ import { notifyUser } from "../messages/notifyUser";
 import type { IServices } from "../services";
 import type { Condition } from "../types";
 import type { ILogger } from "../util/logger";
-const connection = new IORedis({ maxRetriesPerRequest: null });
+
+export const connection = new IORedis({ maxRetriesPerRequest: null });
 
 export const queue = new Queue("watchcord-tasks", {
   defaultJobOptions: {},

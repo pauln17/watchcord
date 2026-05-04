@@ -1,3 +1,4 @@
+import type { Queue, Worker } from "bullmq";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 
 import { WatchCache } from "../cache/watchCache";
@@ -15,7 +16,11 @@ import { ConditionService, type IServices, WatchService } from "../services";
 import type { Command } from "../types";
 import { logger } from "../util/logger";
 
-export const initializeApp = async (): Promise<void> => {
+export const initializeApp = async (): Promise<{
+  client: Client;
+  queue: Queue;
+  worker: Worker;
+}> => {
   const client = new Client({
     intents: [
       GatewayIntentBits.Guilds,
@@ -86,4 +91,6 @@ export const initializeApp = async (): Promise<void> => {
   });
 
   await client.login(process.env.DISCORD_TOKEN);
+
+  return { client, queue, worker };
 };
