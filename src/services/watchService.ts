@@ -134,31 +134,36 @@ export class WatchService implements IWatchService {
       data.scope === undefined &&
       data.enabled === undefined &&
       data.channelId === undefined
-    ) {
+    )
       throw new ValidationError("At least one option is required");
-    }
 
     if (
       data.scope !== undefined &&
       data.scope !== "GUILD" &&
       data.scope !== "CHANNEL"
-    ) {
+    )
       throw new ValidationError("Invalid scope");
-    }
+
+    if (data.scope === "GUILD" && data.channelId)
+      throw new ValidationError("Guild scope cannot be used with a channel");
 
     if (data.scope === "CHANNEL" && !data.channelId)
       throw new ValidationError(
         "Channel is required when scope is set to channel",
       );
 
-    if (data.scope === "GUILD" && data.channelId)
-      throw new ValidationError("Guild scope cannot be used with a channel");
-
     const existing = await this.repositories.watchRepository.findByIdAndUserId(
       id,
       userId,
     );
     if (!existing) return null;
+
+    if (
+      existing.scope === "GUILD" &&
+      (data.scope === "GUILD" || data.scope === undefined) &&
+      data.channelId !== undefined
+    )
+      throw new ValidationError("Guild scope cannot be used with a channel");
 
     const watch = await this.repositories.watchRepository.updateById(id, {
       ...(data.name != null ? { name: data.name } : {}),

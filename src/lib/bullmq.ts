@@ -20,8 +20,8 @@ export const queue = new Queue("watchcord-tasks", {
     },
     removeOnComplete: true,
     removeOnFail: {
-      age: 24 * 3600 // 24 hours
-    }
+      age: 24 * 3600, // 24 hours
+    },
   },
   connection,
 });
@@ -36,7 +36,10 @@ export const startWorker = async (
     async (job: Job) => {
       if (job.name === "process-message") {
         const { authorId, guildId, channelId, url, content } = job.data;
-        if (!authorId || !guildId || !channelId || !url || !content) throw new UnrecoverableError("Invalid payload for process-message job");
+        if (!authorId || !guildId || !channelId || !url || !content)
+          throw new UnrecoverableError(
+            "Invalid payload for process-message job",
+          );
 
         const [guildScopedWatches, channelScopedWatches] = await Promise.all([
           services.watchService.getGuildScopedWatches(guildId),
@@ -48,12 +51,18 @@ export const startWorker = async (
           ...channelScopedWatches,
         ];
 
-        if (relevantWatches.length === 0) throw new UnrecoverableError("No relevant watches found for process-message job");
+        if (relevantWatches.length === 0)
+          throw new UnrecoverableError(
+            "No relevant watches found for process-message job",
+          );
 
         const author = await client.guilds.cache
           .get(guildId)
           ?.members.fetch(authorId);
-        if (!author) throw new UnrecoverableError("Author not found for process-message job");
+        if (!author)
+          throw new UnrecoverableError(
+            "Author not found for process-message job",
+          );
 
         const messageData = { author, guildId, channelId, url, content };
 
@@ -64,13 +73,21 @@ export const startWorker = async (
             message: `Failed to process message from author: ${authorId} in guild: ${guildId} ${channelId ? `and channel: ${channelId}` : ""}`,
             error,
           });
-          throw new Error("Failed on handleMessageCreate in process-message job");
+          throw new Error(
+            "Failed on handleMessageCreate in process-message job",
+          );
         }
       }
 
       if (job.name === "notify-user") {
         const { watch, matchedConditionIds, messageData } = job.data;
-        if (!watch || (Array.isArray(matchedConditionIds) && matchedConditionIds.length === 0) || !messageData) throw new UnrecoverableError("Invalid payload for notify-user job");
+        if (
+          !watch ||
+          (Array.isArray(matchedConditionIds) &&
+            matchedConditionIds.length === 0) ||
+          !messageData
+        )
+          throw new UnrecoverableError("Invalid payload for notify-user job");
 
         const fetchedConditions = await Promise.all(
           matchedConditionIds.map(async (conditionId: string) => {
@@ -78,14 +95,20 @@ export const startWorker = async (
               conditionId,
               watch.userId,
             );
-            if (!condition) throw new UnrecoverableError("Condition not found for notify-user job");
+            if (!condition)
+              throw new UnrecoverableError(
+                "Condition not found for notify-user job",
+              );
             return condition;
           }),
         ).then((conditions) =>
           conditions.filter((condition: Condition) => condition !== undefined),
         );
 
-        if (fetchedConditions.length === 0) throw new UnrecoverableError("No conditions found for notify-user job");
+        if (fetchedConditions.length === 0)
+          throw new UnrecoverableError(
+            "No conditions found for notify-user job",
+          );
 
         try {
           await notifyUser(client, watch, fetchedConditions, messageData);
