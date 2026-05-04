@@ -1,14 +1,22 @@
-import { Client, EmbedBuilder, type Message } from "discord.js";
+import { Client, EmbedBuilder } from "discord.js";
 
 import type { Condition, Watch } from "../types";
 import { titleCase } from "../util/strings";
 
-export const sendAlert = async (
+export const notifyUser = async (
   client: Client,
   watch: Watch,
-  matchedConditions: Condition[],
-  message: Message,
+  conditions: Condition[],
+  messageData: {
+    authorId: string;
+    guildId: string;
+    channelId: string;
+    url: string;
+    content: string;
+  },
 ) => {
+  const { authorId, guildId, channelId, url, content } = messageData;
+
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
     .setTitle(`Watch Triggered: ${watch.name}`)
@@ -19,22 +27,21 @@ export const sendAlert = async (
         name: "Scope",
         value: `${titleCase(watch.scope)}`,
       },
+      { name: "Server", value: `${client.guilds.cache.get(guildId)?.name}` },
+      { name: "Channel", value: `<#${channelId}>` },
+      { name: "Link", value: `${url}` },
       {
-        name: "Triggered By",
-        value: `<@${message.author.id}> in ${message.url}`,
+        name: "Message Details",
+        value: `${[
+          `**Author:** <@${authorId}>`,
+          `**Content:** ${content.length <= 300 ? content : `${content.slice(0, 297)}...`}`,
+        ].join("\n")}`,
       },
       {
-        name: "Message",
-        value:
-          message.content.length <= 300
-            ? message.content
-            : `${message.content.slice(0, 297)}...`,
-      },
-      {
-        name: `Conditions Matched (${matchedConditions.length})`,
+        name: `Conditions Matched (${conditions.length})`,
         value: (
           await Promise.all(
-            matchedConditions.map((condition) =>
+            conditions.map((condition) =>
               (async () => {
                 const lines: string[] = [
                   `**Name:** ${condition.name}`,

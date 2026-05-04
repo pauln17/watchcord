@@ -3,7 +3,7 @@ import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { WatchCache } from "../cache/watchCache";
 import { commandModules } from "../commands";
 import { handleInteractionCreate } from "../events/interactionCreate";
-import { handleMessageCreate } from "../events/messageCreate";
+import { queue, startWorker } from "../lib/bullmq";
 import { prisma } from "../lib/prisma";
 import { redis } from "../lib/redis";
 import {
@@ -47,6 +47,8 @@ export const initializeApp = async (): Promise<void> => {
     ]),
   );
 
+  const worker = await startWorker(client, services, logger);
+
   client.on("interactionCreate", async (interaction) => {
     await handleInteractionCreate(
       client,
@@ -58,7 +60,29 @@ export const initializeApp = async (): Promise<void> => {
   });
 
   client.on("messageCreate", async (message) => {
-    await handleMessageCreate(client, message, services, logger);
+    const messageData = {
+      authorId: message.author.id,
+      guildId: message.guildId,
+      channelId: message.channelId,
+      url: message.url,
+      content: message.content,
+    };
+
+    try {
+      await queue.add("process-message", messageData);
+    } catch (error) {
+      logger.error({
+        message: "Failed to enqueue message for processing",
+        error,
+      });
+    }
+  });
+
+  worker.on("error", (err) => {
+    logger.error({
+      message: "Worker Error",
+      error: err,
+    });
   });
 
   await client.login(process.env.DISCORD_TOKEN);

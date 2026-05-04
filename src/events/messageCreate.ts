@@ -1,52 +1,45 @@
-import { Client, type Message } from "discord.js";
+import { GuildMember } from "discord.js";
 
+import { queue } from "../lib/bullmq";
 import { evaluateMatch } from "../messages/evaluateMatch";
-import { sendAlert } from "../messages/sendAlert";
-import type { IServices } from "../services";
+import type { Watch } from "../types";
 import type { ILogger } from "../util/logger";
 
 export async function handleMessageCreate(
-  client: Client,
-  message: Message,
-  services: IServices,
+  relevantWatches: Watch[],
+  messageData: {
+    author: GuildMember;
+    guildId: string;
+    channelId: string;
+    url: string;
+    content: string;
+  },
   logger: ILogger,
 ) {
-  const { guildId, channelId, content } = message;
-  if (!guildId || !channelId || !content) return;
+  await Promise.all(
+    relevantWatches.map(async (watch) => {
+      // if (watch.userId === message.author.id) return;
+      if (!watch.enabled) return;
 
-  try {
-    const [guildScopedWatches, channelScopedWatches] = await Promise.all([
-      services.watchService.getGuildScopedWatches(guildId),
-      services.watchService.getChannelScopedWatches(guildId, channelId),
-    ]);
+      const matchedConditionIds = watch.conditions
+        .filter((condition) =>
+          evaluateMatch(condition, messageData.author, messageData.content),
+        )
+        .map((condition) => condition.id);
 
-    const watches = [...guildScopedWatches, ...channelScopedWatches];
-
-    await Promise.all(
-      watches.map(async (watch) => {
-        // if (watch.userId === message.author.id) return;
-        if (!watch.enabled) return;
-
-        const filteredConditions = watch.conditions.filter((condition) =>
-          evaluateMatch(condition, message),
-        );
-
-        if (filteredConditions.length > 0) {
-          try {
-            await sendAlert(client, watch, filteredConditions, message);
-          } catch (error) {
-            logger.error({
-              message: `Failed to send notification on watch: ${watch.id} to user: ${watch.userId}`,
-              error,
-            });
-          }
-        }
-      }),
-    );
-  } catch (error) {
-    logger.error({
-      message: "An error occurred on message create event handler",
-      error,
-    });
-  }
+      if (matchedConditionIds.length === 0) return;
+      try {
+        await queue.add("notify-user", {
+          watch,
+          matchedConditionIds,
+          messageData,
+        });
+      } catch (error) {
+        logger.error({
+          message: "Failed to enqueue notification for user",
+          error,
+        });
+      }
+    }),
+  );
 }

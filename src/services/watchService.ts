@@ -1,7 +1,7 @@
 import type { IWatchCache } from "../cache/watchCache";
-import { ValidationError } from "../util/error";
 import type { IRepositories } from "../repositories";
 import type { Watch } from "../types";
+import { ValidationError } from "../util/error";
 
 export interface IWatchService {
   getWatches: () => Promise<Watch[]>;
@@ -16,7 +16,7 @@ export interface IWatchService {
   updateUserWatch: (
     id: string,
     userId: string,
-    data: Partial<Pick<Watch, "name" | "scope" | "channelId">>,
+    data: Partial<Pick<Watch, "name" | "enabled" | "scope" | "channelId">>,
   ) => Promise<Watch | null>;
   deleteUserWatch: (id: string, userId: string) => Promise<Watch | null>;
 }

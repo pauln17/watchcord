@@ -1,10 +1,11 @@
-import type { Message } from "discord.js";
+import type { GuildMember } from "discord.js";
 
 import type { Condition } from "../types";
 
 export const evaluateMatch = (
   condition: Condition,
-  message: Message,
+  author: GuildMember,
+  content: string,
 ): boolean => {
   const {
     sensitive,
@@ -15,16 +16,16 @@ export const evaluateMatch = (
     targetRoles = [],
   } = condition;
 
-  if (targetUsers.length > 0 && !targetUsers.includes(message.author.id))
-    return false;
+  if (targetUsers.length > 0 && !targetUsers.includes(author.id)) return false;
   if (
     targetRoles.length > 0 &&
-    (!message.member ||
-      !targetRoles.some((roleId) => message.member!.roles.cache.has(roleId)))
+    (!author || !targetRoles.some((roleId) => author.roles.cache.has(roleId)))
   )
     return false;
 
   switch (type) {
+    case "ANY":
+      return true;
     case "TERM":
       if (include.length === 0 && exclude.length === 0) return false;
 
@@ -32,8 +33,8 @@ export const evaluateMatch = (
         if (
           !include.some((term) =>
             sensitive
-              ? message.content.includes(term)
-              : message.content.toLowerCase().includes(term.toLowerCase()),
+              ? content.includes(term)
+              : content.toLowerCase().includes(term.toLowerCase()),
           )
         )
           return false;
@@ -43,8 +44,8 @@ export const evaluateMatch = (
         if (
           exclude.some((term) =>
             sensitive
-              ? message.content.includes(term)
-              : message.content.toLowerCase().includes(term.toLowerCase()),
+              ? content.includes(term)
+              : content.toLowerCase().includes(term.toLowerCase()),
           )
         )
           return false;
@@ -52,6 +53,6 @@ export const evaluateMatch = (
 
       return true;
     default:
-      return true;
+      return false;
   }
 };

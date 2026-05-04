@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { sendAlert } from "../../../messages/sendAlert";
+import { sendAlert } from "../../../messages/notifyUser";
 import {
   createMockClient,
   createMockCondition,

@@ -5,9 +5,9 @@ import type {
   RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
 
-import { ValidationError } from "../util/error";
 import type { IServices } from "../services";
 import type { Command } from "../types";
+import { ValidationError } from "../util/error";
 import type { ILogger } from "../util/logger";
 
 export async function handleInteractionCreate(

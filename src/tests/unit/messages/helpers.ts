@@ -1,7 +1,8 @@
 import type { Client, Message } from "discord.js";
-import type { Condition } from "../../../types/condition";
 import { expect, vi } from "vitest";
+
 import type { Watch } from "../../../types";
+import type { Condition } from "../../../types/condition";
 
 export const createMockClient = () => {
   const send = vi.fn();

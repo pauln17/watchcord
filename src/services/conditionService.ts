@@ -1,8 +1,8 @@
 import type { IWatchCache } from "../cache/watchCache";
 import { CONDITION_LIMITS } from "../constants/conditionLimits";
-import { ValidationError } from "../util/error";
 import type { IRepositories } from "../repositories";
 import type { Condition } from "../types";
+import { ValidationError } from "../util/error";
 
 export interface IConditionService {
   getUserCondition: (id: string, userId: string) => Promise<Condition | null>;

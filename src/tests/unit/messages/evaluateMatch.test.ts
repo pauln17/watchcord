@@ -1,6 +1,7 @@
-import { describe, test, expect } from "vitest";
-import { createMockMessage, createMockCondition } from "./helpers";
+import { describe, expect, test } from "vitest";
+
 import { evaluateMatch } from "../../../messages/evaluateMatch";
+import { createMockCondition, createMockMessage } from "./helpers";
 
 describe("evaluateMatch", () => {
   describe("conditions of type term", () => {
