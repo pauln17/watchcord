@@ -3,6 +3,7 @@ import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import type { IServices } from "../../services";
 import type { ScopeType } from "../../types";
 import { titleCase } from "../../util/strings";
+import { ValidationError } from "../../util/error";
 
 export const addWatch = async (
   interaction: ChatInputCommandInteraction,
@@ -12,6 +13,17 @@ export const addWatch = async (
   const enabled = interaction.options.getBoolean("enabled") ?? true;
   const scope = interaction.options.getString("scope", true) as ScopeType;
   const channel = interaction.options.getChannel("channel");
+
+  if (scope !== "GUILD" && scope !== "CHANNEL")
+    throw new ValidationError("Invalid scope");
+
+  if (scope === "GUILD" && channel)
+    throw new ValidationError("Guild scope cannot be used with a channel");
+
+  if (scope === "CHANNEL" && !channel)
+    throw new ValidationError(
+      "Channel is required when scope is set to channel",
+    );
 
   const watch = await services.watchService.createUserWatch({
     name,
