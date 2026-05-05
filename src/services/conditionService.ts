@@ -1,6 +1,8 @@
 import type { IWatchCache } from "../cache/watchCache";
+import { CONDITION_LIMITS } from "../constants";
 import type { IRepositories } from "../repositories";
 import type { Condition } from "../types";
+import { ValidationError } from "../util/error";
 
 export interface IConditionService {
   getUserCondition: (id: string, userId: string) => Promise<Condition | null>;
@@ -32,12 +34,31 @@ export class ConditionService implements IConditionService {
     );
   };
 
+  getUserWatchConditions = async (
+    watchId: string,
+    userId: string,
+  ): Promise<Condition[]> => {
+    return await this.repositories.conditionRepository.findManyByWatchIdAndUserId(
+      watchId,
+      userId,
+    );
+  };
+
   createUserCondition = async (
     data: Omit<Condition, "id">,
     guildId: string,
     channelId: string | null,
     userId: string,
   ): Promise<Condition> => {
+    const userConditionsByWatch = await this.getUserWatchConditions(
+      data.watchId,
+      userId,
+    );
+    if (userConditionsByWatch.length >= CONDITION_LIMITS.MAX_CONDITIONS)
+      throw new ValidationError(
+        "You have reached the maximum number of conditions for this watch",
+      );
+
     const condition = await this.repositories.conditionRepository.create({
       ...data,
     });
@@ -51,8 +72,7 @@ export class ConditionService implements IConditionService {
     id: string,
     userId: string,
   ): Promise<Condition | null> => {
-    const existing =
-      await this.repositories.conditionRepository.findByIdAndUserId(id, userId);
+    const existing = await this.getUserCondition(id, userId);
     if (!existing) return null;
 
     const condition =

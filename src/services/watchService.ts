@@ -1,4 +1,5 @@
 import type { IWatchCache } from "../cache/watchCache";
+import { WATCH_LIMITS } from "../constants";
 import type { IRepositories } from "../repositories";
 import type { Watch } from "../types";
 import { ValidationError } from "../util/error";
@@ -98,6 +99,16 @@ export class WatchService implements IWatchService {
   createUserWatch = async (
     data: Omit<Watch, "id" | "conditions">,
   ): Promise<Watch> => {
+    const userWatchesByGuild = await this.getUserWatches(
+      data.userId,
+      data.guildId,
+    );
+
+    if (userWatchesByGuild.length >= WATCH_LIMITS.MAX_WATCHES)
+      throw new ValidationError(
+        "You have reached the maximum number of watches for this guild",
+      );
+
     const watch = await this.repositories.watchRepository.create({
       ...data,
       channelId: data.scope === "GUILD" ? null : data.channelId,

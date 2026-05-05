@@ -2,6 +2,10 @@ export const MIN_INPUT_LENGTH = 1;
 
 export const MAX_NAME_LENGTH = 15;
 
+export const WATCH_LIMITS = {
+  MAX_WATCHES: 10,
+};
+
 export const CONDITION_LIMITS = {
   MAX_CONDITIONS: 5,
   MAX_INPUT_LENGTH: 350,

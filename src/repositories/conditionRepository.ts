@@ -3,6 +3,10 @@ import type { Condition } from "../types";
 
 export interface IConditionRepository {
   findByIdAndUserId: (id: string, userId: string) => Promise<Condition | null>;
+  findManyByWatchIdAndUserId: (
+    watchId: string,
+    userId: string,
+  ) => Promise<Condition[]>;
   create: (data: Omit<Condition, "id">) => Promise<Condition>;
   deleteById: (id: string) => Promise<Condition>;
 }
@@ -16,6 +20,15 @@ export class ConditionRepository implements IConditionRepository {
   ): Promise<Condition | null> => {
     return await this.prisma.condition.findFirst({
       where: { id, watch: { userId } },
+    });
+  };
+
+  findManyByWatchIdAndUserId = async (
+    watchId: string,
+    userId: string,
+  ): Promise<Condition[]> => {
+    return await this.prisma.condition.findMany({
+      where: { watchId, watch: { userId } },
     });
   };
 
