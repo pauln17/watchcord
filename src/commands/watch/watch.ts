@@ -11,6 +11,7 @@ import { editWatch } from "./edit";
 import { listWatch } from "./list";
 import { removeWatch } from "./remove";
 import { viewWatch } from "./view";
+import { MAX_NAME_LENGTH, MIN_INPUT_LENGTH } from "../../constants";
 
 export const data = new SlashCommandBuilder()
   .setName("watch")
@@ -41,6 +42,8 @@ export const data = new SlashCommandBuilder()
         option
           .setName("name")
           .setDescription("The name of the watch")
+          .setMinLength(MIN_INPUT_LENGTH)
+          .setMaxLength(MAX_NAME_LENGTH)
           .setRequired(true),
       )
       .addStringOption((option) =>
@@ -82,6 +85,8 @@ export const data = new SlashCommandBuilder()
         option
           .setName("name")
           .setDescription("The name of the watch")
+          .setMinLength(MIN_INPUT_LENGTH)
+          .setMaxLength(MAX_NAME_LENGTH)
           .setRequired(false),
       )
       .addStringOption((option) =>

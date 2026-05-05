@@ -4,7 +4,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import { CONDITION_LIMITS } from "../../constants/conditionLimits";
+import { CONDITION_LIMITS, MAX_NAME_LENGTH, MIN_INPUT_LENGTH } from "../../constants";
 import type { IServices } from "../../services";
 import { addCondition } from "./add";
 import { removeCondition } from "./remove";
@@ -28,6 +28,8 @@ export const data = new SlashCommandBuilder()
         option
           .setName("name")
           .setDescription("The name of the condition")
+          .setMinLength(MIN_INPUT_LENGTH)
+          .setMaxLength(MAX_NAME_LENGTH)
           .setRequired(true),
       )
       .addStringOption((option) =>
@@ -44,20 +46,20 @@ export const data = new SlashCommandBuilder()
         option
           .setName("include")
           .setDescription(
-            `The terms to include (term1, term2, term3, etc.) max ${CONDITION_LIMITS.maxIncludeTerms} terms`,
+            `The terms to include (term1, term2, term3, etc.) max ${CONDITION_LIMITS.MAX_INCLUDE_TERMS} terms`,
           )
-          .setMinLength(1)
-          .setMaxLength(CONDITION_LIMITS.maxInputLength)
+          .setMinLength(MIN_INPUT_LENGTH)
+          .setMaxLength(CONDITION_LIMITS.MAX_INPUT_LENGTH)
           .setRequired(false),
       )
       .addStringOption((option) =>
         option
           .setName("exclude")
           .setDescription(
-            `The terms to exclude (term1, term2, term3, etc.) max ${CONDITION_LIMITS.maxExcludeTerms} terms`,
+            `The terms to exclude (term1, term2, term3, etc.) max ${CONDITION_LIMITS.MAX_EXCLUDE_TERMS} terms`,
           )
-          .setMinLength(1)
-          .setMaxLength(CONDITION_LIMITS.maxInputLength)
+          .setMinLength(MIN_INPUT_LENGTH)
+          .setMaxLength(CONDITION_LIMITS.MAX_INPUT_LENGTH)
           .setRequired(false),
       )
       .addBooleanOption((option) =>
@@ -70,20 +72,20 @@ export const data = new SlashCommandBuilder()
         option
           .setName("target-users")
           .setDescription(
-            `The users to target (id1, id2, id3, etc.) max ${CONDITION_LIMITS.maxTargetUsers} users`,
+            `The users to target (id1, id2, id3, etc.) max ${CONDITION_LIMITS.MAX_TARGET_USERS} users`,
           )
-          .setMinLength(1)
-          .setMaxLength(CONDITION_LIMITS.maxInputLength)
+          .setMinLength(MIN_INPUT_LENGTH)
+          .setMaxLength(CONDITION_LIMITS.MAX_INPUT_LENGTH)
           .setRequired(false),
       )
       .addStringOption((option) =>
         option
           .setName("target-roles")
           .setDescription(
-            `The roles to target (id1, id2, id3, etc.) max ${CONDITION_LIMITS.maxTargetRoles} roles`,
+            `The roles to target (id1, id2, id3, etc.) max ${CONDITION_LIMITS.MAX_TARGET_ROLES} roles`,
           )
-          .setMinLength(1)
-          .setMaxLength(CONDITION_LIMITS.maxInputLength)
+          .setMinLength(MIN_INPUT_LENGTH)
+          .setMaxLength(CONDITION_LIMITS.MAX_INPUT_LENGTH)
           .setRequired(false),
       ),
   )

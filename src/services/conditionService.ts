@@ -1,5 +1,5 @@
 import type { IWatchCache } from "../cache/watchCache";
-import { CONDITION_LIMITS } from "../constants/conditionLimits";
+import { CONDITION_LIMITS } from "../constants";
 import type { IRepositories } from "../repositories";
 import type { Condition } from "../types";
 import { ValidationError } from "../util/error";
