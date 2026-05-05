@@ -64,10 +64,15 @@ export const startWorker = async (
             "Author not found for process-message job",
           );
 
-        const messageData = { author, guildId, channelId, url, content };
+        const messageData = { authorId, guildId, channelId, url, content };
 
         try {
-          await handleMessageCreate(relevantWatches, messageData, logger);
+          await handleMessageCreate(
+            relevantWatches,
+            author,
+            messageData,
+            logger,
+          );
         } catch (error) {
           logger.error({
             message: `Failed to process message from author: ${authorId} in guild: ${guildId} ${channelId ? `and channel: ${channelId}` : ""}`,

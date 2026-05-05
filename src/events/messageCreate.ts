@@ -7,8 +7,9 @@ import type { ILogger } from "../util/logger";
 
 export async function handleMessageCreate(
   relevantWatches: Watch[],
+  author: GuildMember,
   messageData: {
-    author: GuildMember;
+    authorId: string;
     guildId: string;
     channelId: string;
     url: string;
@@ -23,7 +24,7 @@ export async function handleMessageCreate(
 
       const matchedConditionIds = watch.conditions
         .filter((condition) =>
-          evaluateMatch(condition, messageData.author, messageData.content),
+          evaluateMatch(condition, author, messageData.content),
         )
         .map((condition) => condition.id);
 
