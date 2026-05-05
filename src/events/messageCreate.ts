@@ -1,5 +1,6 @@
 import { GuildMember } from "discord.js";
 
+import { NOTIFY_USER_JOB_NAME } from "../jobs";
 import { queue } from "../lib/bullmq";
 import { evaluateMatch } from "../messages/evaluateMatch";
 import type { Watch } from "../types";
@@ -30,7 +31,7 @@ export async function handleMessageCreate(
 
       if (matchedConditionIds.length === 0) return;
       try {
-        await queue.add("notify-user", {
+        await queue.add(NOTIFY_USER_JOB_NAME, {
           watch,
           matchedConditionIds,
           messageData,

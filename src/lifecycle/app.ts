@@ -4,6 +4,7 @@ import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { WatchCache } from "../cache/watchCache";
 import { commandModules } from "../commands";
 import { handleInteractionCreate } from "../events/interactionCreate";
+import { PROCESS_MESSAGE_JOB_NAME } from "../jobs";
 import { queue, startWorker } from "../lib/bullmq";
 import { prisma } from "../lib/prisma";
 import { redis } from "../lib/redis";
@@ -70,7 +71,7 @@ export const initializeApp = async (): Promise<{
     };
 
     try {
-      await queue.add("process-message", messageData);
+      await queue.add(PROCESS_MESSAGE_JOB_NAME, messageData);
     } catch (error) {
       logger.error({
         message: "Failed to enqueue message for processing",
