@@ -116,7 +116,13 @@ export const startWorker = async (
           );
 
         try {
-          await notifyUser(client, watch, fetchedConditions, messageData);
+          await notifyUser(
+            client,
+            watch,
+            fetchedConditions,
+            messageData,
+            logger,
+          );
         } catch (error) {
           logger.error({
             message: `Failed to send notification on watch: ${watch.id} to user: ${watch.userId}`,

@@ -37,17 +37,10 @@ export const addCondition = async (
     });
   }
 
-  if (
-    type === "ANY" &&
-    (include.length > 0 || exclude.length > 0)
-  )
+  if (type === "ANY" && (include.length > 0 || exclude.length > 0))
     throw new ValidationError("Terms cannot be provided when type is ANY");
 
-  if (
-    type === "TERM" &&
-    include.length === 0 &&
-    exclude.length === 0
-  )
+  if (type === "TERM" && include.length === 0 && exclude.length === 0)
     throw new ValidationError("Terms must be provided when type is TERM");
 
   if (include.length > CONDITION_LIMITS.MAX_INCLUDE_TERMS)

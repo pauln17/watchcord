@@ -2,8 +2,8 @@ import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 
 import type { IServices } from "../../services";
 import type { ScopeType } from "../../types";
-import { titleCase } from "../../util/strings";
 import { ValidationError } from "../../util/error";
+import { titleCase } from "../../util/strings";
 
 export const addWatch = async (
   interaction: ChatInputCommandInteraction,
