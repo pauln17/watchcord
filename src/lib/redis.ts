@@ -1,5 +1,5 @@
-import { createClient } from "redis";
+import IORedis from "ioredis";
 
-export type RedisClientType = ReturnType<typeof createClient>;
+export const redis = new IORedis({ maxRetriesPerRequest: null });
 
-export const redis = createClient();
+export type IORedisType = InstanceType<typeof IORedis>;

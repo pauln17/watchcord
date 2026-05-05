@@ -1,14 +1,12 @@
 import { type Job, Queue, UnrecoverableError, Worker } from "bullmq";
 import { type Client } from "discord.js";
-import IORedis from "ioredis";
 
 import { handleMessageCreate } from "../events/messageCreate";
 import { notifyUser } from "../messages/notifyUser";
 import type { IServices } from "../services";
 import type { Condition } from "../types";
 import type { ILogger } from "../util/logger";
-
-export const connection = new IORedis({ maxRetriesPerRequest: null });
+import { redis } from "./redis";
 
 export const queue = new Queue("watchcord-tasks", {
   defaultJobOptions: {
@@ -23,7 +21,7 @@ export const queue = new Queue("watchcord-tasks", {
       age: 24 * 3600, // 24 hours
     },
   },
-  connection,
+  connection: redis,
 });
 
 export const startWorker = async (
@@ -132,7 +130,7 @@ export const startWorker = async (
         }
       }
     },
-    { concurrency: 50, connection },
+    { concurrency: 50, connection: redis },
   );
 
   return worker;

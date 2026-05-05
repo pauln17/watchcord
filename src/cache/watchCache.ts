@@ -1,4 +1,4 @@
-import type { RedisClientType } from "../lib/redis";
+import type { IORedisType } from "../lib/redis";
 import type { Watch } from "../types";
 import type { ILogger } from "../util/logger";
 
@@ -34,7 +34,7 @@ export class WatchCache implements IWatchCache {
   private readonly TTL_SECONDS = 3600;
 
   constructor(
-    private readonly redis: RedisClientType,
+    private readonly redis: IORedisType,
     private readonly logger: ILogger,
   ) {}
 
@@ -57,7 +57,7 @@ export class WatchCache implements IWatchCache {
   getGuildScopedWatches = async (guildId: string): Promise<Watch[] | null> => {
     try {
       const raw = await this.redis.get(this.guildKey(guildId));
-      if (raw === null) return null;
+      if (raw == null) return null;
       return JSON.parse(raw) as Watch[];
     } catch (error) {
       this.logger.error({
@@ -73,7 +73,7 @@ export class WatchCache implements IWatchCache {
   ): Promise<Watch[] | null> => {
     try {
       const raw = await this.redis.get(this.channelKey(channelId));
-      if (raw === null) return null;
+      if (raw == null) return null;
       return JSON.parse(raw) as Watch[];
     } catch (error) {
       this.logger.error({
@@ -90,7 +90,7 @@ export class WatchCache implements IWatchCache {
   ): Promise<Watch[] | null> => {
     try {
       const raw = await this.redis.get(this.userWatchesKey(userId, guildId));
-      if (raw === null) return null;
+      if (raw == null) return null;
       return JSON.parse(raw) as Watch[];
     } catch (error) {
       this.logger.error({
@@ -107,7 +107,7 @@ export class WatchCache implements IWatchCache {
   ): Promise<Watch | null> => {
     try {
       const raw = await this.redis.get(this.userWatchKey(watchId, userId));
-      if (raw === null) return null;
+      if (raw == null) return null;
       return JSON.parse(raw) as Watch;
     } catch (error) {
       this.logger.error({ message: "Redis get failed for user watch", error });
@@ -120,9 +120,12 @@ export class WatchCache implements IWatchCache {
     watches: Watch[],
   ): Promise<void> => {
     try {
-      await this.redis.set(this.guildKey(guildId), JSON.stringify(watches), {
-        EX: this.TTL_SECONDS,
-      });
+      await this.redis.set(
+        this.guildKey(guildId),
+        JSON.stringify(watches),
+        "EX",
+        this.TTL_SECONDS,
+      );
     } catch (error) {
       this.logger.error({
         message: "Redis set failed for guild watches",
@@ -139,7 +142,8 @@ export class WatchCache implements IWatchCache {
       await this.redis.set(
         this.channelKey(channelId),
         JSON.stringify(watches),
-        { EX: this.TTL_SECONDS },
+        "EX",
+        this.TTL_SECONDS,
       );
     } catch (error) {
       this.logger.error({
@@ -158,7 +162,8 @@ export class WatchCache implements IWatchCache {
       await this.redis.set(
         this.userWatchesKey(userId, guildId),
         JSON.stringify(watches),
-        { EX: this.TTL_SECONDS },
+        "EX",
+        this.TTL_SECONDS,
       );
     } catch (error) {
       this.logger.error({
@@ -177,7 +182,8 @@ export class WatchCache implements IWatchCache {
       await this.redis.set(
         this.userWatchKey(watchId, userId),
         JSON.stringify(watch),
-        { EX: this.TTL_SECONDS },
+        "EX",
+        this.TTL_SECONDS,
       );
     } catch (error) {
       this.logger.error({ message: "Redis set failed for user watch", error });
@@ -191,19 +197,11 @@ export class WatchCache implements IWatchCache {
     watchId?: string,
   ): Promise<void> => {
     try {
-      await this.redis.del(this.guildKey(guildId));
-
-      if (channelId) {
-        await this.redis.del(this.channelKey(channelId));
-      }
-
-      if (userId) {
-        await this.redis.del(this.userWatchesKey(userId, guildId));
-      }
-
-      if (userId && watchId) {
-        await this.redis.del(this.userWatchKey(watchId, userId));
-      }
+      const keys = [this.guildKey(guildId)];
+      if (channelId) keys.push(this.channelKey(channelId));
+      if (userId) keys.push(this.userWatchesKey(userId, guildId));
+      if (userId && watchId) keys.push(this.userWatchKey(watchId, userId));
+      await this.redis.del(...keys);
     } catch (error) {
       this.logger.error({ message: "Redis invalidate failed", error });
     }

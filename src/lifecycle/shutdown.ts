@@ -1,7 +1,6 @@
 import type { Queue, Worker } from "bullmq";
 import type { Client } from "discord.js";
 
-import { connection } from "../lib/bullmq";
 import { prisma } from "../lib/prisma";
 import { redis } from "../lib/redis";
 import type { ILogger } from "../util/logger";
@@ -23,10 +22,7 @@ export const registerShutdown = (
     try {
       await worker.close();
       await queue.close();
-      await connection.quit();
-      if (redis.isOpen) {
-        await redis.quit();
-      }
+      await redis.quit();
       await prisma.$disconnect();
       await client.destroy();
       process.exit(0);

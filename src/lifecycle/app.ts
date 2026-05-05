@@ -29,10 +29,6 @@ export const initializeApp = async (): Promise<{
     ],
   });
 
-  if (!redis.isOpen) {
-    await redis.connect();
-  }
-
   const cache = new WatchCache(redis, logger);
 
   const repositories: IRepositories = {
