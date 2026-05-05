@@ -5,13 +5,13 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
+import { MAX_NAME_LENGTH, MIN_INPUT_LENGTH } from "../../constants";
 import type { IServices } from "../../services";
 import { addWatch } from "./add";
 import { editWatch } from "./edit";
 import { listWatch } from "./list";
 import { removeWatch } from "./remove";
 import { viewWatch } from "./view";
-import { MAX_NAME_LENGTH, MIN_INPUT_LENGTH } from "../../constants";
 
 export const data = new SlashCommandBuilder()
   .setName("watch")

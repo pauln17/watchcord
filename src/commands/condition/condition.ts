@@ -4,7 +4,11 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import { CONDITION_LIMITS, MAX_NAME_LENGTH, MIN_INPUT_LENGTH } from "../../constants";
+import {
+  CONDITION_LIMITS,
+  MAX_NAME_LENGTH,
+  MIN_INPUT_LENGTH,
+} from "../../constants";
 import type { IServices } from "../../services";
 import { addCondition } from "./add";
 import { removeCondition } from "./remove";

@@ -18,26 +18,31 @@ export const listWatch = async (
     });
   }
 
-  const description = watches
-    .map((watch) => {
-      return [
-        `**Name:** ${watch.name}`,
-        `**ID:** \`${watch.id}\``,
-        `**Enabled:** ${watch.enabled ? "True" : "False"}`,
-        `**Scope:** ${titleCase(watch.scope)}`,
-        `**Server:** ${interaction.guild?.name ?? `\`${watch.guildId}\``}`,
-        ...(watch.scope === "CHANNEL" && watch.channelId
-          ? [`**Channel:** <#${watch.channelId}>`]
-          : []),
-        `**View:** \`/watch view id: ${watch.id}\``,
-      ].join("\n");
-    })
-    .join("\n\n---\n\n");
+  const watchFields = watches.map((watch, i) => {
+    const value = [
+      `**Name:** ${watch.name}`,
+      `**ID:** \`${watch.id}\``,
+      `**Enabled:** ${watch.enabled ? "True" : "False"}`,
+      `**Scope:** ${titleCase(watch.scope)}`,
+      `**Server:** ${interaction.guild?.name ?? `\`${watch.guildId}\``}`,
+      ...(watch.scope === "CHANNEL" && watch.channelId
+        ? [`**Channel:** <#${watch.channelId}>`]
+        : []),
+      `**View:** \`/watch view id: ${watch.id}\``,
+    ].join("\n");
+
+    const separator = i < watches.length - 1 ? "\n\n---" : "";
+
+    return {
+      name: `**Watch Name:** ${watch.name}`,
+      value: value + separator,
+    };
+  });
 
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
     .setTitle(`Watch List of Server: ${interaction.guild!.name}`)
-    .setDescription(description)
+    .addFields(...watchFields)
     .setFooter({
       text: "Watchcord",
       iconURL: interaction.client.user?.displayAvatarURL() ?? "",

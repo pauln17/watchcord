@@ -20,26 +20,31 @@ export const viewWatch = async (
     });
   }
 
-  const conditions = watch.conditions
-    .map((condition) =>
-      [
-        `**Name:** ${condition.name}`,
-        `**ID:** \`${condition.id}\``,
-        `**Type:** ${condition.type}`,
-        `**Case Sensitive:** ${condition.sensitive ? "Enabled" : "Disabled"}`,
-        condition.include.length > 0 &&
-          `**Include Terms (${condition.include.length}):** ${condition.include.join(", ")}`,
-        condition.exclude.length > 0 &&
-          `**Exclude Terms (${condition.exclude.length}):** ${condition.exclude.join(", ")}`,
-        condition.targetUsers.length > 0 &&
-          `**Target Users (${condition.targetUsers.length}):** ${condition.targetUsers.map((id) => `<@${id}>`).join(", ")}`,
-        condition.targetRoles.length > 0 &&
-          `**Target Roles (${condition.targetRoles.length}):** ${condition.targetRoles.map((id) => `<@&${id}>`).join(", ")}`,
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    )
-    .join("\n\n");
+  const conditionFields = watch.conditions.map((condition, i) => {
+    const value = [
+      `**Name:** ${condition.name}`,
+      `**ID:** \`${condition.id}\``,
+      `**Type:** ${condition.type}`,
+      `**Case Sensitive:** ${condition.sensitive ? "Enabled" : "Disabled"}`,
+      condition.include.length > 0 &&
+        `**Include Terms (${condition.include.length}):** ${condition.include.join(", ")}`,
+      condition.exclude.length > 0 &&
+        `**Exclude Terms (${condition.exclude.length}):** ${condition.exclude.join(", ")}`,
+      condition.targetUsers.length > 0 &&
+        `**Target Users (${condition.targetUsers.length}):** ${condition.targetUsers.map((id) => `<@${id}>`).join(", ")}`,
+      condition.targetRoles.length > 0 &&
+        `**Target Roles (${condition.targetRoles.length}):** ${condition.targetRoles.map((id) => `<@&${id}>`).join(", ")}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const separator = i < watch.conditions.length - 1 ? "\n\n---" : "";
+
+    return {
+      name: `**Condition Name:** ${condition.name}`,
+      value: value + separator,
+    };
+  });
 
   const notificationEmbed = new EmbedBuilder()
     .setColor("#5f58b6")
@@ -53,10 +58,7 @@ export const viewWatch = async (
       ...(watch.scope === "CHANNEL" && watch.channelId
         ? [{ name: "Channel", value: `<#${watch.channelId}>` }]
         : []),
-      {
-        name: `Conditions (${watch.conditions.length})`,
-        value: conditions ? conditions : "Empty",
-      },
+      ...conditionFields,
     )
     .setFooter({
       text: "Watchcord",
