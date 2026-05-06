@@ -18,7 +18,7 @@ export async function handleMessageCreate(
   },
   logger: ILogger,
 ) {
-  await Promise.all(
+  const filteredWatches = await Promise.all(
     relevantWatches.map(async (watch) => {
       // if (watch.userId === message.author.id) return;
       if (!watch.enabled) return;
@@ -30,18 +30,24 @@ export async function handleMessageCreate(
         .map((condition) => condition.id);
 
       if (matchedConditionIds.length === 0) return;
-      try {
-        await queue.add(NOTIFY_USER_JOB_NAME, {
-          watch,
-          matchedConditionIds,
-          messageData,
-        });
-      } catch (error) {
-        logger.error({
-          message: "Failed to enqueue notification for user",
-          error,
-        });
-      }
+
+      return { watch, matchedConditionIds };
     }),
-  );
+  ).then((payload) => payload.filter((payload) => payload !== undefined));
+
+  if (filteredWatches.length === 0) return;
+
+  try {
+    await queue.addBulk(
+      filteredWatches.map(({ watch, matchedConditionIds }) => ({
+        name: NOTIFY_USER_JOB_NAME,
+        data: { watch, matchedConditionIds, messageData },
+      })),
+    );
+  } catch (error) {
+    logger.error({
+      message: "Failed to enqueue notification for users",
+      error,
+    });
+  }
 }
