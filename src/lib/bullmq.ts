@@ -1,4 +1,4 @@
-import { type Job, Queue, Worker } from "bullmq";
+import { type Job, Queue, UnrecoverableError, Worker } from "bullmq";
 import { type Client } from "discord.js";
 
 import {
@@ -44,8 +44,10 @@ export const startWorker = async (
         await runNotifyUserJob(client, services, logger, job.data);
         return;
       }
+
+      throw new UnrecoverableError(`Unknown job name: ${job.name}`);
     },
-    { concurrency: 50, connection: redis },
+    { concurrency: 10, connection: redis },
   );
 
   return worker;
