@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { evaluateMatch } from "../../../messages/evaluateMatch";
-import { createMockCondition, createMockMessage } from "./helpers";
+import { createMockAuthor, createMockCondition } from "./helpers";
 
 describe("evaluateMatch", () => {
   describe("conditions of type term", () => {
@@ -11,12 +11,9 @@ describe("evaluateMatch", () => {
         include: [],
         exclude: [],
       });
-      const message = createMockMessage({
-        content: "hello",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "hello");
       expect(result).toBe(false);
     });
 
@@ -26,12 +23,9 @@ describe("evaluateMatch", () => {
         include: ["hello"],
         exclude: [],
       });
-      const message = createMockMessage({
-        content: "well hello there",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "well hello there");
 
       expect(result).toBe(true);
     });
@@ -42,11 +36,9 @@ describe("evaluateMatch", () => {
         include: ["hello"],
         exclude: [],
       });
-      const message = createMockMessage({
-        content: "world",
-        authorId: "123",
-      });
-      const result = evaluateMatch(condition, message);
+      const author = createMockAuthor({ authorId: "123" });
+
+      const result = evaluateMatch(condition, author, "world");
       expect(result).toBe(false);
     });
 
@@ -56,12 +48,9 @@ describe("evaluateMatch", () => {
         include: [],
         exclude: ["hello"],
       });
-      const message = createMockMessage({
-        content: "hello",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "hello");
 
       expect(result).toBe(false);
     });
@@ -72,12 +61,9 @@ describe("evaluateMatch", () => {
         include: [],
         exclude: ["hello"],
       });
-      const message = createMockMessage({
-        content: "world",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "world");
 
       expect(result).toBe(true);
     });
@@ -88,12 +74,9 @@ describe("evaluateMatch", () => {
         include: ["urgent", "invoice"],
         exclude: [],
       });
-      const message = createMockMessage({
-        content: "new invoice posted",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "new invoice posted");
 
       expect(result).toBe(true);
     });
@@ -104,12 +87,9 @@ describe("evaluateMatch", () => {
         include: ["invoice"],
         exclude: ["paid"],
       });
-      const message = createMockMessage({
-        content: "invoice already paid",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "invoice already paid");
 
       expect(result).toBe(false);
     });
@@ -120,12 +100,9 @@ describe("evaluateMatch", () => {
         include: ["invoice"],
         exclude: ["paid"],
       });
-      const message = createMockMessage({
-        content: "invoice is ready",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "invoice is ready");
 
       expect(result).toBe(true);
     });
@@ -136,12 +113,9 @@ describe("evaluateMatch", () => {
       const condition = createMockCondition({
         type: "ANY",
       });
-      const message = createMockMessage({
-        content: "hello",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "hello");
 
       expect(result).toBe(true);
     });
@@ -152,12 +126,9 @@ describe("evaluateMatch", () => {
       const condition = createMockCondition({
         targetUsers: ["123"],
       });
-      const message = createMockMessage({
-        content: "",
-        authorId: "123",
-      });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "");
 
       expect(result).toBe(true);
     });
@@ -166,12 +137,9 @@ describe("evaluateMatch", () => {
       const condition = createMockCondition({
         targetUsers: ["123"],
       });
-      const message = createMockMessage({
-        content: "",
-        authorId: "456",
-      });
+      const author = createMockAuthor({ authorId: "456" });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "");
 
       expect(result).toBe(false);
     });
@@ -180,13 +148,9 @@ describe("evaluateMatch", () => {
       const condition = createMockCondition({
         targetRoles: ["123"],
       });
-      const message = createMockMessage({
-        content: "",
-        authorId: "123",
-        roleIds: ["123"],
-      });
+      const author = createMockAuthor({ authorId: "123", roleIds: ["123"] });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "");
 
       expect(result).toBe(true);
     });
@@ -195,13 +159,9 @@ describe("evaluateMatch", () => {
       const condition = createMockCondition({
         targetRoles: ["123"],
       });
-      const message = createMockMessage({
-        content: "",
-        authorId: "123",
-        roleIds: ["456"],
-      });
+      const author = createMockAuthor({ authorId: "123", roleIds: ["456"] });
 
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "");
       expect(result).toBe(false);
     });
 
@@ -209,30 +169,9 @@ describe("evaluateMatch", () => {
       const condition = createMockCondition({
         targetRoles: ["admin", "mod"],
       });
+      const author = createMockAuthor({ authorId: "123", roleIds: ["mod"] });
 
-      const message = createMockMessage({
-        content: "",
-        authorId: "123",
-        roleIds: ["mod"],
-      });
-
-      expect(evaluateMatch(condition, message)).toBe(true);
-    });
-
-    test("message has target role but no member data -> return false", () => {
-      const condition = createMockCondition({
-        targetRoles: ["123"],
-      });
-      const message = createMockMessage({
-        content: "",
-        authorId: "123",
-        hasMember: false,
-        roleIds: ["123"],
-      });
-
-      const result = evaluateMatch(condition, message);
-
-      expect(result).toBe(false);
+      expect(evaluateMatch(condition, author, "")).toBe(true);
     });
   });
 
@@ -243,13 +182,9 @@ describe("evaluateMatch", () => {
         include: ["Hello"],
         sensitive: true,
       });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const message = createMockMessage({
-        content: "hello",
-        authorId: "123",
-      });
-
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "hello");
       expect(result).toBe(false);
     });
 
@@ -259,13 +194,9 @@ describe("evaluateMatch", () => {
         include: ["Hello"],
         sensitive: false,
       });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const message = createMockMessage({
-        content: "hello",
-        authorId: "123",
-      });
-
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "hello");
       expect(result).toBe(true);
     });
 
@@ -275,13 +206,9 @@ describe("evaluateMatch", () => {
         exclude: ["Hello"],
         sensitive: true,
       });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const message = createMockMessage({
-        content: "hello",
-        authorId: "123",
-      });
-
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "hello");
       expect(result).toBe(true);
     });
 
@@ -291,13 +218,9 @@ describe("evaluateMatch", () => {
         exclude: ["Hello"],
         sensitive: false,
       });
+      const author = createMockAuthor({ authorId: "123" });
 
-      const message = createMockMessage({
-        content: "hello",
-        authorId: "123",
-      });
-
-      const result = evaluateMatch(condition, message);
+      const result = evaluateMatch(condition, author, "hello");
       expect(result).toBe(false);
     });
   });

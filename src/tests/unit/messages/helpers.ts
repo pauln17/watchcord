@@ -1,4 +1,4 @@
-import type { Client, Message } from "discord.js";
+import type { Client, GuildMember } from "discord.js";
 import { expect, vi } from "vitest";
 
 import type { Watch } from "../../../types";
@@ -22,12 +22,15 @@ export const createMockClient = () => {
           .mockReturnValue("https://example.com/bot.png"),
       },
       users: {
+        cache: { get: vi.fn(() => undefined) },
         fetch: vi.fn(async (id: keyof typeof users) => users[id] ?? null),
       },
       guilds: {
         cache: {
           get: vi.fn(() => ({
+            name: "Test Guild",
             roles: {
+              cache: { get: vi.fn(() => undefined) },
               fetch: vi.fn(async (id: keyof typeof roles) => roles[id] ?? null),
             },
           })),
@@ -65,29 +68,15 @@ export const createMockCondition = (
   ...overrides,
 });
 
-export const createMockMessage = (overrides: {
-  content: string;
+export const createMockAuthor = (overrides: {
   authorId: string;
-  guildId?: string;
-  channelId?: string;
-  hasMember?: boolean;
   roleIds?: string[];
-  url?: string;
-}): Message => {
+}): GuildMember => {
   const roleSet = new Set(overrides.roleIds ?? []);
   return {
-    content: overrides.content,
-    guildId: overrides.guildId ?? "g-1",
-    channelId: overrides.channelId ?? "c-1",
-    url: overrides.url ?? "https://discord.com/channels/g-1/c-1/m-1",
-    author: { id: overrides.authorId } as Message["author"],
-    member:
-      overrides.hasMember === false
-        ? null
-        : ({
-            roles: { cache: { has: (id: string) => roleSet.has(id) } },
-          } as Message["member"]),
-  } as unknown as Message;
+    id: overrides.authorId,
+    roles: { cache: { has: (id: string) => roleSet.has(id) } },
+  } as unknown as GuildMember;
 };
 
 export const getEmbedField = (

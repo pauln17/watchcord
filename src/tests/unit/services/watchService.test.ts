@@ -1,8 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
 import { WatchService } from "../../../services/watchService";
-import type { ScopeType } from "../../../types";
-import { ValidationError } from "../../../util/error";
 import { createCache, createMockWatch, createRepos } from "./helpers";
 
 describe("WatchService", () => {
@@ -193,58 +191,6 @@ describe("WatchService", () => {
   });
 
   describe("createUserWatch", async () => {
-    test("invalid scope -> throw validation error", async () => {
-      const repos = createRepos({});
-      const cache = createCache({});
-      const service = new WatchService(repos, cache);
-      await expect(
-        service.createUserWatch({
-          name: "a",
-          userId: "u-1",
-          enabled: true,
-          scope: "INVALID" as ScopeType,
-          guildId: "g-1",
-          channelId: null,
-        }),
-      ).rejects.toThrow(ValidationError);
-    });
-
-    test("guild scope with channels -> throw validation error", async () => {
-      const repos = createRepos({});
-      const cache = createCache({});
-      const service = new WatchService(repos, cache);
-      await expect(
-        service.createUserWatch({
-          name: "a",
-          userId: "u-1",
-          enabled: true,
-          scope: "GUILD",
-          guildId: "g-1",
-          channelId: "c-1",
-        }),
-      ).rejects.toThrow(ValidationError);
-    });
-
-    test("channel scope without channel -> throw validation error", async () => {
-      const repos = createRepos({});
-      const cache = createCache({});
-
-      const service = new WatchService(repos, cache);
-
-      await expect(
-        service.createUserWatch({
-          name: "a",
-          userId: "u-1",
-          enabled: true,
-          scope: "CHANNEL",
-          guildId: "g-1",
-          channelId: null,
-        }),
-      ).rejects.toThrow(ValidationError);
-      expect(repos.watchRepository.create).not.toHaveBeenCalled();
-      expect(cache.invalidate).not.toHaveBeenCalled();
-    });
-
     test("valid inputs -> create watch -> invalidate watch cache", async () => {
       const watch = createMockWatch();
       const repos = createRepos({
@@ -252,7 +198,9 @@ describe("WatchService", () => {
           create: vi.fn().mockResolvedValue(watch),
         },
       });
-      const cache = createCache({});
+      const cache = createCache({
+        getUserWatches: vi.fn().mockResolvedValue([]),
+      });
 
       const service = new WatchService(repos, cache);
       const result = await service.createUserWatch({

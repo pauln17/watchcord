@@ -1,15 +1,15 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
-import { sendAlert } from "../../../messages/notifyUser";
+import { notifyUser } from "../../../messages/notifyUser";
+import type { ILogger } from "../../../util/logger";
 import {
   createMockClient,
   createMockCondition,
-  createMockMessage,
   createMockWatch,
   getEmbedField,
 } from "./helpers";
 
-describe("sendAlert", () => {
+describe("notifyUser", () => {
   test("sends watch alert embed to watch owner", async () => {
     const { client, send } = createMockClient();
     const watch = createMockWatch();
@@ -22,13 +22,16 @@ describe("sendAlert", () => {
       targetUsers: ["target-user-1"],
       targetRoles: ["target-role-1"],
     });
-    const message = createMockMessage({
-      content: "deploy production now",
+    const messageData = {
       authorId: "author-1",
+      guildId: "g-1",
+      channelId: "c-1",
       url: "https://discord.com/channels/g-1/c-1/m-99",
-    });
+      content: "deploy production now",
+    };
+    const logger = { error: vi.fn() } as unknown as ILogger;
 
-    await sendAlert(client, watch, [condition], message);
+    await notifyUser(client, watch, [condition], messageData, logger);
 
     expect(client.users.fetch).toHaveBeenCalledWith("owner-1");
     expect(send).toHaveBeenCalledTimes(1);
@@ -46,19 +49,19 @@ describe("sendAlert", () => {
     expect(getEmbedField(embed, "Name").value).toBe("Release Watch");
     expect(getEmbedField(embed, "ID").value).toBe("`w-1`");
     expect(getEmbedField(embed, "Scope").value).toBe("Channel");
-    expect(getEmbedField(embed, "Triggered By").value).toBe(
-      "<@author-1> in https://discord.com/channels/g-1/c-1/m-99",
+    expect(getEmbedField(embed, "Message Details").value).toBe(
+      "**Author:** <@author-1>\n**Content:** deploy production now",
     );
-    expect(getEmbedField(embed, "Message").value).toBe("deploy production now");
-    expect(getEmbedField(embed, "Conditions Matched (1)").value).toBe(
+    expect(getEmbedField(embed, "**Condition Name:** Deploy Mentions").value).toBe(
       [
         "**Name:** Deploy Mentions",
+        "**ID:** `c-1`",
         "**Type:** Term",
         "**Case Sensitive:** Enabled",
         "**Include Terms (1):** deploy",
         "**Exclude Terms (1):** staging",
-        "**Condition User(s):** Target User",
-        "**Condition Role(s):** Target Role",
+        "**Target Users (1):** Target User",
+        "**Target Roles (1):** Target Role",
       ].join("\n"),
     );
   });
@@ -67,16 +70,22 @@ describe("sendAlert", () => {
     const { client, send } = createMockClient();
     const watch = createMockWatch();
     const condition = createMockCondition({ name: "Any Message" });
-    const message = createMockMessage({
-      content: "a".repeat(301),
+    const messageData = {
       authorId: "author-1",
-    });
+      guildId: "g-1",
+      channelId: "c-1",
+      url: "https://discord.com/channels/g-1/c-1/m-1",
+      content: "a".repeat(301),
+    };
+    const logger = { error: vi.fn() } as unknown as ILogger;
 
-    await sendAlert(client, watch, [condition], message);
+    await notifyUser(client, watch, [condition], messageData, logger);
 
     const payload = send.mock.calls[0]![0];
     const embed = payload.embeds[0].toJSON();
 
-    expect(getEmbedField(embed, "Message").value).toBe(`${"a".repeat(297)}...`);
+    expect(getEmbedField(embed, "Message Details").value).toBe(
+      `**Author:** <@author-1>\n**Content:** ${"a".repeat(297)}...`,
+    );
   });
 });

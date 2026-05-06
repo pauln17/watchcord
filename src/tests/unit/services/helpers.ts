@@ -52,6 +52,7 @@ export const createRepos = (overrides?: {
     },
     conditionRepository: {
       findByIdAndUserId: vi.fn(),
+      findManyByWatchIdAndUserId: vi.fn(),
       create: vi.fn(),
       deleteById: vi.fn(),
       ...overrides?.conditionRepository,
