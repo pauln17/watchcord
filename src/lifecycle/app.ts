@@ -3,6 +3,7 @@ import { Client, Collection, GatewayIntentBits } from "discord.js";
 
 import { WatchCache } from "../cache/watchCache";
 import { commandModules } from "../commands";
+import { deployCommands } from "../deploy-commands";
 import { handleInteractionCreate } from "../events/interactionCreate";
 import { PROCESS_MESSAGE_JOB_NAME } from "../jobs";
 import { queue, startWorker } from "../lib/bullmq";
@@ -78,6 +79,10 @@ export const initializeApp = async (): Promise<{
         error,
       });
     }
+  });
+
+  client.on("guildCreate", async (guild) => {
+    await deployCommands(guild.id);
   });
 
   worker.on("error", (err) => {

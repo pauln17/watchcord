@@ -1,5 +1,7 @@
 import IORedis from "ioredis";
 
-export const redis = new IORedis({ maxRetriesPerRequest: null });
+export const redis = new IORedis(`${process.env.REDIS_URL}`, {
+  maxRetriesPerRequest: null,
+});
 
 export type IORedisType = InstanceType<typeof IORedis>;

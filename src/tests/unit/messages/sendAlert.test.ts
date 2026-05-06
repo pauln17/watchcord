@@ -52,7 +52,9 @@ describe("notifyUser", () => {
     expect(getEmbedField(embed, "Message Details").value).toBe(
       "**Author:** <@author-1>\n**Content:** deploy production now",
     );
-    expect(getEmbedField(embed, "**Condition Name:** Deploy Mentions").value).toBe(
+    expect(
+      getEmbedField(embed, "**Condition Name:** Deploy Mentions").value,
+    ).toBe(
       [
         "**Name:** Deploy Mentions",
         "**ID:** `c-1`",

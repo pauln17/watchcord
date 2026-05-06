@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import { initializeApp } from "./lifecycle/app";
 import { registerShutdown } from "./lifecycle/shutdown";
 import { logger } from "./util/logger";

@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "tsx watch src/index.ts",
-    "deploy": "tsx src/deploy-command.ts",
+    "sync": "tsx src/sync-commands.ts",
     "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
