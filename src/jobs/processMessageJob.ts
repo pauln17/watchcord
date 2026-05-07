@@ -1,5 +1,5 @@
 import { UnrecoverableError } from "bullmq";
-import type { Client } from "discord.js";
+import { type Client, PermissionFlagsBits } from "discord.js";
 
 import { handleMessageCreate } from "../events/messageCreate";
 import type { IServices } from "../services";
@@ -46,7 +46,27 @@ export async function runProcessMessageJob(
   const messageData = { authorId, guildId, channelId, url, content };
 
   try {
-    await handleMessageCreate(relevantWatches, author, messageData, logger);
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild)
+      throw new UnrecoverableError("Guild not found for process-message job");
+
+    const permissionedWatches = await Promise.all(
+      relevantWatches.map(async (watch) => {
+        const member = await guild.members
+          .fetch(watch.userId)
+          .catch(() => null);
+        if (!member) return;
+        if (
+          !member.permissionsIn(channelId).has(PermissionFlagsBits.ViewChannel)
+        )
+          return;
+        return watch;
+      }),
+    ).then((watches) => watches.filter((watch) => watch !== undefined));
+
+    if (permissionedWatches.length === 0) return;
+
+    await handleMessageCreate(permissionedWatches, author, messageData, logger);
   } catch (error) {
     logger.error({
       message: `Failed to process message from author: ${authorId} in guild: ${guildId} ${channelId ? `and channel: ${channelId}` : ""}`,

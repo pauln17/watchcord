@@ -58,6 +58,7 @@ export async function runNotifyUserJob(
       message: `Failed to send notification on watch: ${watch.id} to user: ${watch.userId}`,
       error,
     });
-    throw new Error("Failed on notifyUser in notify-user job");
+
+    throw error;
   }
 }

@@ -1,4 +1,5 @@
-import { Client, EmbedBuilder } from "discord.js";
+import { UnrecoverableError } from "bullmq";
+import { Client, EmbedBuilder, PermissionFlagsBits } from "discord.js";
 
 import { CONDITION_LIMITS } from "../constants";
 import type { Condition, Watch } from "../types";
@@ -19,8 +20,27 @@ export const notifyUser = async (
   logger: ILogger,
 ) => {
   const { authorId, guildId, channelId, url, content } = messageData;
+  const user = await client.guilds.cache
+    .get(guildId)
+    ?.members.fetch(watch.userId);
+
+  if (!user) {
+    logger.error({
+      message: "User not found",
+      error: new Error("User not found"),
+    });
+    throw new Error("User not found");
+  }
+
+  if (!user.permissionsIn(channelId).has(PermissionFlagsBits.ViewChannel)) {
+    throw new UnrecoverableError(
+      "User does not have permission to view channel",
+    );
+  }
+
   const mappedUsernames = new Map<string, string>();
   const mappedRoleNames = new Map<string, string>();
+
   for (const condition of conditions) {
     for (const targetUser of condition.targetUsers) {
       if (mappedUsernames.has(targetUser)) continue;
@@ -136,6 +156,5 @@ export const notifyUser = async (
     })
     .setTimestamp(new Date());
 
-  const user = await client.users.fetch(watch.userId);
   await user.send({ embeds: [notificationEmbed] });
 };
